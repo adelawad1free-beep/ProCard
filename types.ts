@@ -14,6 +14,13 @@ export interface CardFont {
   family: string;
 }
 
+export interface ExtraField {
+  id: string;
+  label: string;
+  value: string;
+  iconId: string;
+}
+
 export interface CardData {
   name: string;
   title: string;
@@ -38,15 +45,23 @@ export interface CardData {
   frontLogoX: number;
   frontLogoY: number;
   frontLogoVisible: boolean;
-  frontLogoWhite: boolean; // تحويل الشعار للأبيض في الأمام
+  frontLogoWhite: boolean; 
   // إعدادات الوجه الخلفي
   backLogoScale: number;
   backLogoX: number;
   backLogoY: number;
   backLogoVisible: boolean;
-  backLogoWhite: boolean; // تحويل الشعار للأبيض في الخلف
+  backLogoWhite: boolean; 
   // معالجة الشعار
   logoBgRemoved: boolean;
+  // الأيقونات والحقول الإضافية
+  icons: {
+    phone: string;
+    email: string;
+    website: string;
+    address: string;
+  };
+  extraFields: ExtraField[];
 }
 
 export interface Template {

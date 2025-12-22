@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
-import { CardData, CardLayout } from '../types';
-import { TEMPLATES, ARABIC_FONTS } from '../constants';
+import { CardData, CardLayout, ExtraField } from '../types';
+import { TEMPLATES, ARABIC_FONTS, FLAT_ICONS } from '../constants';
 import { generateProfessionalContent } from '../services/geminiService';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
@@ -21,6 +21,34 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData }) => {
     const { name, value, type } = e.target as HTMLInputElement;
     const val = type === 'checkbox' ? (e.target as HTMLInputElement).checked : (type === 'range' || type === 'number' ? parseFloat(value) : value);
     setData(prev => ({ ...prev, [name]: val }));
+  };
+
+  const handleIconChange = (field: string, iconId: string) => {
+    setData(prev => ({
+      ...prev,
+      icons: { ...prev.icons, [field]: iconId }
+    }));
+  };
+
+  const addExtraField = () => {
+    const newField: ExtraField = {
+      id: Math.random().toString(36).substr(2, 9),
+      label: 'عنوان إضافي',
+      value: '',
+      iconId: 'info'
+    };
+    setData(prev => ({ ...prev, extraFields: [...prev.extraFields, newField] }));
+  };
+
+  const removeExtraField = (id: string) => {
+    setData(prev => ({ ...prev, extraFields: prev.extraFields.filter(f => f.id !== id) }));
+  };
+
+  const updateExtraField = (id: string, updates: Partial<ExtraField>) => {
+    setData(prev => ({
+      ...prev,
+      extraFields: prev.extraFields.map(f => f.id === id ? { ...f, ...updates } : f)
+    }));
   };
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -122,6 +150,22 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData }) => {
   const colorLabelClass = "text-[10px] font-black text-slate-500 text-center mb-1 block";
   const sliderClass = "w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600";
 
+  const IconSelector = ({ value, onChange }: { value: string, onChange: (id: string) => void }) => (
+    <div className="flex flex-wrap gap-1 mt-1 bg-white p-2 rounded-lg border border-slate-200">
+      {Object.keys(FLAT_ICONS).map(iconId => (
+        <button
+          key={iconId}
+          onClick={() => onChange(iconId)}
+          className={`p-1.5 rounded-md border transition-all ${value === iconId ? 'bg-blue-600 text-white border-blue-600' : 'bg-slate-50 text-slate-400 border-slate-100 hover:border-slate-300'}`}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d={FLAT_ICONS[iconId]} />
+          </svg>
+        </button>
+      ))}
+    </div>
+  );
+
   return (
     <div className="w-full lg:w-[480px] bg-white border-l border-slate-200 h-full overflow-y-auto p-5 scrollbar-hide shadow-2xl z-30 flex flex-col no-print">
       <div className="mb-4 sticky top-0 bg-white z-10 pb-3 border-b border-slate-100 flex justify-between items-end">
@@ -149,6 +193,7 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData }) => {
           </div>
         </section>
 
+        {/* إدارة الشعار */}
         <section className="bg-slate-50 p-4 rounded-2xl border border-slate-100 shadow-sm border-t-4 border-t-blue-500">
           <div className="flex justify-between items-center mb-4">
              <h3 className="text-[11px] font-black text-slate-900 uppercase flex items-center gap-2">
@@ -240,20 +285,56 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData }) => {
 
         <div className="space-y-4">
           <section className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-            <h3 className="text-[9px] font-black text-indigo-600 mb-3 uppercase">البيانات الشخصية والعنوان</h3>
+            <h3 className="text-[9px] font-black text-indigo-600 mb-3 uppercase">البيانات الشخصية</h3>
             <div className="space-y-3">
               <input name="name" value={data.name} onChange={handleChange} className={inputClass} placeholder="الاسم الكامل" />
               <input name="title" value={data.title} onChange={handleChange} className={inputClass} placeholder="المسمى الوظيفي" />
-              <input name="address" value={data.address} onChange={handleChange} className={inputClass} placeholder="العنوان (المدينة، الدولة)" />
             </div>
           </section>
 
           <section className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-            <h3 className="text-[9px] font-black text-orange-600 mb-3 uppercase">بيانات التواصل</h3>
-            <div className="space-y-3">
-              <input name="phone" value={data.phone} onChange={handleChange} className={inputClass} placeholder="رقم الهاتف" />
-              <input name="email" value={data.email} onChange={handleChange} className={inputClass} placeholder="البريد الإلكتروني" />
-              <input name="website" value={data.website} onChange={handleChange} className={inputClass} placeholder="الموقع الإلكتروني" />
+            <h3 className="text-[9px] font-black text-orange-600 mb-3 uppercase">بيانات التواصل (أيقونات مسطحة)</h3>
+            <div className="space-y-4">
+              <div>
+                <input name="phone" value={data.phone} onChange={handleChange} className={inputClass} placeholder="رقم الهاتف" />
+                <IconSelector value={data.icons.phone} onChange={(id) => handleIconChange('phone', id)} />
+              </div>
+              <div>
+                <input name="email" value={data.email} onChange={handleChange} className={inputClass} placeholder="البريد الإلكتروني" />
+                <IconSelector value={data.icons.email} onChange={(id) => handleIconChange('email', id)} />
+              </div>
+              <div>
+                <input name="website" value={data.website} onChange={handleChange} className={inputClass} placeholder="الموقع الإلكتروني" />
+                <IconSelector value={data.icons.website} onChange={(id) => handleIconChange('website', id)} />
+              </div>
+              <div>
+                <input name="address" value={data.address} onChange={handleChange} className={inputClass} placeholder="العنوان الرئيسي" />
+                <IconSelector value={data.icons.address} onChange={(id) => handleIconChange('address', id)} />
+              </div>
+            </div>
+          </section>
+
+          <section className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-[9px] font-black text-purple-600 uppercase">عناوين وحقول إضافية</h3>
+              <button onClick={addExtraField} className="text-[9px] bg-purple-600 text-white px-2 py-1 rounded-md font-bold">+ إضافة سطر</button>
+            </div>
+            <div className="space-y-5">
+              {data.extraFields.map((field) => (
+                <div key={field.id} className="p-3 bg-white rounded-xl border border-slate-200 relative group">
+                  <button onClick={() => removeExtraField(field.id)} className="absolute -left-2 -top-2 w-5 h-5 bg-red-500 text-white rounded-full text-[10px] hidden group-hover:flex items-center justify-center shadow-lg">×</button>
+                  <input 
+                    value={field.value} 
+                    onChange={(e) => updateExtraField(field.id, { value: e.target.value })} 
+                    className="w-full p-2 text-xs font-bold text-right border-b border-slate-100 focus:border-purple-500 outline-none mb-2" 
+                    placeholder="نص الحقل الإضافي..."
+                  />
+                  <IconSelector value={field.iconId} onChange={(id) => updateExtraField(field.id, { iconId: id })} />
+                </div>
+              ))}
+              {data.extraFields.length === 0 && (
+                <p className="text-[9px] text-slate-400 text-center py-2">لا توجد حقول إضافية حالياً</p>
+              )}
             </div>
           </section>
 

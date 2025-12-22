@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { CardData, CardSide } from '../types';
+import { CardData, CardSide, ExtraField } from '../types';
+import { FLAT_ICONS } from '../constants';
 
 interface CardPreviewProps {
   data: CardData;
@@ -47,6 +48,15 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, side }) => {
     fontFamily: data.fontFamily,
   };
 
+  const FlatIcon = ({ id, size = 12 }: { id: string, size?: number }) => {
+    const path = FLAT_ICONS[id] || FLAT_ICONS['info'];
+    return (
+      <svg className="shrink-0" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d={path} />
+      </svg>
+    );
+  };
+
   const LogoComponent = () => {
     if (!logoVisible) return null;
 
@@ -63,7 +73,6 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, side }) => {
             maxWidth: '300px',
             maxHeight: '300px',
             objectFit: 'contain',
-            // الفلتر السحري: يحول أي لون لأسود ثم يعكسه للأبيض الكامل
             filter: isWhiteMode ? 'brightness(0) invert(1)' : 'none'
           }} 
         />
@@ -94,10 +103,33 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, side }) => {
         <div className="z-10 text-right">
           <h1 className="text-4xl font-black mb-1.5" style={{ color: data.autoTextColor ? currentText : data.primaryColor }}>{data.name}</h1>
           <p className="text-lg font-bold opacity-80">{data.title}</p>
-          <div className="mt-10 pt-6 border-t flex flex-col gap-2 opacity-70" style={{ borderColor: `${currentText}30` }}>
-            <p className="text-xs font-bold">{data.phone} 📱</p>
-            <p className="text-xs font-bold">{data.email} ✉️</p>
-            <p className="text-xs font-bold">{data.website} 🌐</p>
+          
+          <div className="mt-8 pt-6 border-t flex flex-col gap-2.5 opacity-85" style={{ borderColor: `${currentText}30` }}>
+            {data.phone && (
+              <div className="flex items-center justify-end gap-2 text-xs font-bold">
+                <span>{data.phone}</span>
+                <FlatIcon id={data.icons.phone} />
+              </div>
+            )}
+            {data.email && (
+              <div className="flex items-center justify-end gap-2 text-xs font-bold">
+                <span>{data.email}</span>
+                <FlatIcon id={data.icons.email} />
+              </div>
+            )}
+            {data.website && (
+              <div className="flex items-center justify-end gap-2 text-xs font-bold">
+                <span>{data.website}</span>
+                <FlatIcon id={data.icons.website} />
+              </div>
+            )}
+            {/* الحقول الإضافية */}
+            {data.extraFields.map((field) => (
+              <div key={field.id} className="flex items-center justify-end gap-2 text-xs font-bold">
+                <span>{field.value}</span>
+                <FlatIcon id={field.iconId} />
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -111,7 +143,12 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, side }) => {
         <div className="mt-auto z-10 text-center">
             <h2 className="text-2xl font-black mb-1" style={{ color: data.autoTextColor ? currentText : data.primaryColor }}>{data.company}</h2>
             <p className="text-[10px] font-black tracking-widest uppercase opacity-70">{data.tagline}</p>
-            <div className="mt-4 text-[8px] opacity-40 font-bold">{data.address}</div>
+            {data.address && (
+              <div className="mt-4 text-[8px] opacity-60 font-bold flex items-center justify-center gap-1.5">
+                <FlatIcon id={data.icons.address} size={10} />
+                <span>{data.address}</span>
+              </div>
+            )}
         </div>
     </div>
   );
