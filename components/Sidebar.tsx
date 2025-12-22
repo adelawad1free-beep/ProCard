@@ -155,15 +155,6 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData }) => {
                 <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
                 إدارة الشعار والعلامة
              </h3>
-             {data.logoUrl && (
-               <div className="flex gap-1">
-                 {!data.logoBgRemoved && (
-                   <button onClick={removeBackground} className="text-[8px] bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-black hover:bg-blue-200">
-                      ✨ حذف الخلفية
-                   </button>
-                 )}
-               </div>
-             )}
           </div>
           
           <div className="space-y-4">
@@ -187,13 +178,18 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData }) => {
                 <div className="p-4 space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-black text-slate-500">خيارات العرض</span>
-                    <div className="flex gap-3">
+                    <div className="flex items-center gap-3">
+                      {!data.logoBgRemoved && (
+                        <button onClick={removeBackground} className="text-[8px] bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-black hover:bg-blue-200 transition-all">
+                           ✨ حذف الخلفية
+                        </button>
+                      )}
                       <label className="flex items-center gap-1 cursor-pointer">
                         <span className="text-[9px] font-black text-slate-400 uppercase">إظهار</span>
                         <input type="checkbox" name={activeLogoTab === 'front' ? "frontLogoVisible" : "backLogoVisible"} checked={activeLogoTab === 'front' ? data.frontLogoVisible : data.backLogoVisible} onChange={handleChange} className="w-4 h-4 accent-blue-600" />
                       </label>
                       <label className="flex items-center gap-1 cursor-pointer">
-                        <span className="text-[9px] font-black text-blue-600 uppercase">أبيض كامل</span>
+                        <span className="text-[9px] font-black text-blue-600 uppercase">أبيض</span>
                         <input type="checkbox" name={activeLogoTab === 'front' ? "frontLogoWhite" : "backLogoWhite"} checked={activeLogoTab === 'front' ? data.frontLogoWhite : data.backLogoWhite} onChange={handleChange} className="w-4 h-4 accent-blue-600" />
                       </label>
                     </div>
@@ -244,15 +240,34 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData }) => {
 
         <div className="space-y-4">
           <section className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-            <h3 className="text-[9px] font-black text-indigo-600 mb-3">البيانات الشخصية</h3>
-            <div className="grid grid-cols-1 gap-3">
+            <h3 className="text-[9px] font-black text-indigo-600 mb-3 uppercase">البيانات الشخصية والعنوان</h3>
+            <div className="space-y-3">
               <input name="name" value={data.name} onChange={handleChange} className={inputClass} placeholder="الاسم الكامل" />
               <input name="title" value={data.title} onChange={handleChange} className={inputClass} placeholder="المسمى الوظيفي" />
+              <input name="address" value={data.address} onChange={handleChange} className={inputClass} placeholder="العنوان (المدينة، الدولة)" />
             </div>
           </section>
 
           <section className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-            <h3 className="text-[9px] font-black text-emerald-600 mb-3 flex justify-between">الهوية المؤسسية <button onClick={handleAIHelp} className="text-[8px] bg-slate-900 text-white px-2 rounded">✨ ذكاء اصطناعي</button></h3>
+            <h3 className="text-[9px] font-black text-orange-600 mb-3 uppercase">بيانات التواصل</h3>
+            <div className="space-y-3">
+              <input name="phone" value={data.phone} onChange={handleChange} className={inputClass} placeholder="رقم الهاتف" />
+              <input name="email" value={data.email} onChange={handleChange} className={inputClass} placeholder="البريد الإلكتروني" />
+              <input name="website" value={data.website} onChange={handleChange} className={inputClass} placeholder="الموقع الإلكتروني" />
+            </div>
+          </section>
+
+          <section className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+            <h3 className="text-[9px] font-black text-emerald-600 mb-3 flex justify-between items-center">
+              <span>الهوية المؤسسية</span>
+              <button 
+                onClick={handleAIHelp} 
+                disabled={loadingAI}
+                className="text-[9px] bg-[#1a1c1e] text-white px-3 py-1.5 rounded-full font-bold flex items-center gap-1.5 hover:bg-black transition-all shadow-sm active:scale-95 disabled:opacity-50"
+              >
+                {loadingAI ? 'جاري التوليد...' : 'ذكاء اصطناعي ✨'}
+              </button>
+            </h3>
             <div className="space-y-3">
               <input name="company" value={data.company} onChange={handleChange} className={inputClass} placeholder="اسم الشركة" />
               <input name="tagline" value={data.tagline} onChange={handleChange} className={inputClass} placeholder="الشعار اللفظي" />
