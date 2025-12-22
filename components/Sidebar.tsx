@@ -78,7 +78,7 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const pixels = imageData.data;
       const r = pixels[0], g = pixels[1], b = pixels[2];
-      const threshold = 30;
+      const threshold = 35;
       for (let i = 0; i < pixels.length; i += 4) {
         const pr = pixels[i], pg = pixels[i+1], pb = pixels[i+2];
         if (Math.abs(pr - r) < threshold && Math.abs(pg - g) < threshold && Math.abs(pb - b) < threshold) {
@@ -94,7 +94,7 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
     const element = document.getElementById(id);
     if (!element) return null;
     return await html2canvas(element, { 
-      scale: 5, 
+      scale: 4, 
       useCORS: true, 
       backgroundColor: null, 
       logging: false,
@@ -147,20 +147,11 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
         const cleanInnerHtml = element.innerHTML
           .replace(/<img([^>]+)>/g, '<img$1 />')
           .replace(/<br([^>]+)>/g, '<br$1 />');
-        const styleText = Array.from(document.styleSheets)
-          .filter(sheet => { try { return !!sheet.cssRules; } catch { return false; } })
-          .map(sheet => Array.from(sheet.cssRules).map(rule => rule.cssText).join('\n'))
-          .join('\n');
+        
         const svgContent = `
           <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-            <defs>
-              <style type="text/css">
-                @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
-                ${styleText}
-              </style>
-            </defs>
             <foreignObject width="100%" height="100%">
-              <div xmlns="http://www.w3.org/1999/xhtml" style="width: ${width}px; height: ${height}px; box-sizing: border-box;">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="width: ${width}px; height: ${height}px;">
                 ${cleanInnerHtml}
               </div>
             </foreignObject>
@@ -179,20 +170,20 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
     setExporting(null);
   };
 
-  const inputClass = `w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 font-bold ${lang === 'ar' ? 'text-right' : 'text-left'} shadow-sm text-slate-900 appearance-none transition-all`;
-  const labelClass = `block text-sm font-extrabold text-slate-800 mb-1.5 ${lang === 'ar' ? 'mr-1' : 'ml-1'}`;
+  const inputClass = `w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-bold ${lang === 'ar' ? 'text-right' : 'text-left'} shadow-sm text-slate-900 transition-all hover:border-slate-300`;
+  const labelClass = `block text-[11px] font-black text-slate-500 uppercase mb-1.5 ${lang === 'ar' ? 'mr-1' : 'ml-1'}`;
   const sliderClass = "w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600";
 
   const IconSelector = ({ value, onChange }: { value: string, onChange: (id: string) => void }) => (
-    <div className="flex flex-wrap gap-1 mt-1 bg-white p-2 rounded-lg border border-slate-200">
+    <div className="flex flex-wrap gap-1 mt-1.5 bg-white p-1.5 rounded-xl border border-slate-100">
       {Object.keys(FLAT_ICONS).map(iconId => (
         <button
           key={iconId}
           type="button"
           onClick={() => onChange(iconId)}
-          className={`p-1.5 rounded-md border transition-all ${value === iconId ? 'bg-blue-600 text-white border-blue-600' : 'bg-slate-50 text-slate-400 border-slate-100 hover:border-slate-300'}`}
+          className={`p-2 rounded-lg border transition-all ${value === iconId ? 'bg-blue-600 text-white border-blue-600 shadow-md scale-110 z-10' : 'bg-slate-50 text-slate-400 border-transparent hover:border-slate-200'}`}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d={FLAT_ICONS[iconId]} />
           </svg>
         </button>
@@ -201,17 +192,18 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
   );
 
   return (
-    <div className={`w-full lg:w-[480px] bg-white ${lang === 'ar' ? 'border-l' : 'border-r'} border-slate-200 h-full overflow-y-auto p-5 scrollbar-hide shadow-2xl z-30 flex flex-col no-print`}>
-      <div className="mb-4 sticky top-0 bg-white z-10 pb-3 border-b border-slate-100 flex justify-between items-end">
+    <div className={`w-full lg:w-[480px] bg-white ${lang === 'ar' ? 'border-l' : 'border-r'} border-slate-200 h-full overflow-y-auto p-6 scrollbar-hide shadow-2xl z-30 flex flex-col no-print`}>
+      <div className="mb-6 sticky top-0 bg-white z-20 pb-4 border-b border-slate-100 flex justify-between items-center">
         <div>
-          <h2 className="text-xl font-black text-slate-900 leading-none mb-1">{t.designHub}</h2>
+          <h2 className="text-xl font-black text-slate-900 tracking-tight">{t.designHub}</h2>
           <p className="text-[10px] text-blue-600 font-black uppercase tracking-widest">{t.brandingSuite}</p>
         </div>
       </div>
 
-      <div className="space-y-6 flex-1 pb-10">
-        <section className="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+      <div className="space-y-8 flex-1 pb-10">
+        {/* النمط والخط */}
+        <section className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
              <div>
                 <label className={labelClass}>{t.layout}</label>
                 <select name="layout" value={data.layout} onChange={handleChange} className={inputClass}>
@@ -227,109 +219,133 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
           </div>
         </section>
 
-        <section className="bg-slate-50 p-4 rounded-2xl border border-slate-100 shadow-sm border-t-4 border-t-blue-500 space-y-4">
-          <h3 className="text-[11px] font-black text-slate-900 uppercase flex items-center gap-2">{t.logoManagement}</h3>
-          <div className="flex gap-2">
+        {/* إدارة الشعار */}
+        <section className="bg-slate-50 p-5 rounded-3xl border border-slate-100 shadow-sm space-y-5">
+          <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+            <span className="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
+            {t.logoManagement}
+          </h3>
+          
+          <div className="flex gap-3">
             <input type="file" ref={fileInputRef} accept="image/*" onChange={handleLogoUpload} className="hidden" />
-            <button onClick={() => fileInputRef.current?.click()} className="flex-1 p-3 bg-white border-2 border-dashed border-slate-300 rounded-xl text-slate-600 font-black text-xs hover:border-blue-500 transition-all">
+            <button onClick={() => fileInputRef.current?.click()} className="flex-1 py-4 bg-white border-2 border-dashed border-slate-200 rounded-2xl text-slate-600 font-black text-xs hover:border-blue-500 hover:text-blue-600 transition-all group">
+              <span className="block mb-1 opacity-40 group-hover:scale-110 transition-transform">📁</span>
               {data.logoUrl ? t.updateLogo : t.uploadLogo}
             </button>
           </div>
 
           {data.logoUrl && (
-            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-              <div className="flex border-b">
-                 <button onClick={() => setActiveLogoTab('front')} className={`flex-1 p-2 text-[10px] font-black uppercase ${activeLogoTab === 'front' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}>{t.frontSide}</button>
-                 <button onClick={() => setActiveLogoTab('back')} className={`flex-1 p-2 text-[10px] font-black uppercase ${activeLogoTab === 'back' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}>{t.backSide}</button>
+            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+              <div className="flex bg-slate-50 p-1">
+                 <button onClick={() => setActiveLogoTab('front')} className={`flex-1 py-2 text-[10px] font-black uppercase rounded-xl transition-all ${activeLogoTab === 'front' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>{t.frontSide}</button>
+                 <button onClick={() => setActiveLogoTab('back')} className={`flex-1 py-2 text-[10px] font-black uppercase rounded-xl transition-all ${activeLogoTab === 'back' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>{t.backSide}</button>
               </div>
-              <div className="p-4 space-y-4">
+              <div className="p-5 space-y-5">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black text-slate-500">OPTIONS</span>
-                  <div className="flex items-center gap-3">
-                    {!data.logoBgRemoved && <button onClick={removeBackground} className="text-[8px] bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-black hover:bg-blue-200">{t.removeBg}</button>}
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <span className="text-[9px] font-black text-slate-400">{t.show}</span>
-                      <input type="checkbox" name={activeLogoTab === 'front' ? "frontLogoVisible" : "backLogoVisible"} checked={activeLogoTab === 'front' ? data.frontLogoVisible : data.backLogoVisible} onChange={handleChange} className="w-4 h-4 accent-blue-600" />
+                  <div className="flex gap-2">
+                    {!data.logoBgRemoved && (
+                      <button onClick={removeBackground} className="text-[9px] bg-blue-600 text-white px-3 py-1.5 rounded-full font-black shadow-md shadow-blue-100 hover:bg-blue-700">{t.removeBg}</button>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" name={activeLogoTab === 'front' ? "frontLogoVisible" : "backLogoVisible"} checked={activeLogoTab === 'front' ? data.frontLogoVisible : data.backLogoVisible} onChange={handleChange} className="w-4 h-4 rounded accent-blue-600" />
+                      <span className="text-[10px] font-black text-slate-600 uppercase">{t.show}</span>
                     </label>
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <span className="text-[9px] font-black text-blue-600">{t.white}</span>
-                      <input type="checkbox" name={activeLogoTab === 'front' ? "frontLogoWhite" : "backLogoWhite"} checked={activeLogoTab === 'front' ? data.frontLogoWhite : data.backLogoWhite} onChange={handleChange} className="w-4 h-4 accent-blue-600" />
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" name={activeLogoTab === 'front' ? "frontLogoWhite" : "backLogoWhite"} checked={activeLogoTab === 'front' ? data.frontLogoWhite : data.backLogoWhite} onChange={handleChange} className="w-4 h-4 rounded accent-blue-600" />
+                      <span className="text-[10px] font-black text-blue-600 uppercase">{t.white}</span>
                     </label>
                   </div>
                 </div>
-                <input type="range" name={activeLogoTab === 'front' ? "frontLogoScale" : "backLogoScale"} min="0.1" max="4" step="0.1" value={activeLogoTab === 'front' ? data.frontLogoScale : data.backLogoScale} onChange={handleChange} className={sliderClass} />
-                <div className="grid grid-cols-2 gap-4">
-                  <input type="range" name={activeLogoTab === 'front' ? "frontLogoX" : "backLogoX"} min="0" max="100" value={activeLogoTab === 'front' ? data.frontLogoX : data.backLogoX} onChange={handleChange} className={sliderClass} />
-                  <input type="range" name={activeLogoTab === 'front' ? "frontLogoY" : "backLogoY"} min="0" max="100" value={activeLogoTab === 'front' ? data.frontLogoY : data.backLogoY} onChange={handleChange} className={sliderClass} />
+                
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between mb-1.5"><span className="text-[10px] font-black text-slate-400">{t.logoSize}</span><span className="text-[10px] font-black text-blue-600">{(activeLogoTab === 'front' ? data.frontLogoScale : data.backLogoScale).toFixed(1)}x</span></div>
+                    <input type="range" name={activeLogoTab === 'front' ? "frontLogoScale" : "backLogoScale"} min="0.1" max="4" step="0.1" value={activeLogoTab === 'front' ? data.frontLogoScale : data.backLogoScale} onChange={handleChange} className={sliderClass} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <span className="text-[9px] font-black text-slate-400 mb-1 block uppercase">{t.horizontal}</span>
+                      <input type="range" name={activeLogoTab === 'front' ? "frontLogoX" : "backLogoX"} min="0" max="100" value={activeLogoTab === 'front' ? data.frontLogoX : data.backLogoX} onChange={handleChange} className={sliderClass} />
+                    </div>
+                    <div>
+                      <span className="text-[9px] font-black text-slate-400 mb-1 block uppercase">{t.vertical}</span>
+                      <input type="range" name={activeLogoTab === 'front' ? "frontLogoY" : "backLogoY"} min="0" max="100" value={activeLogoTab === 'front' ? data.frontLogoY : data.backLogoY} onChange={handleChange} className={sliderClass} />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           )}
         </section>
 
-        <section className="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-4">
-          <div className="flex justify-between items-center"><h3 className="text-[10px] font-black text-pink-500 uppercase">{t.colorPanel}</h3></div>
+        {/* لوحة الألوان */}
+        <section className="bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-4">
+          <h3 className="text-[11px] font-black text-pink-500 uppercase tracking-widest">{t.colorPanel}</h3>
           <div className="grid grid-cols-2 gap-4">
-            <input type="color" name="frontBackgroundColor" value={data.frontBackgroundColor} onChange={handleChange} className="w-full h-10 rounded-lg cursor-pointer bg-white p-1 border border-slate-200" />
-            <input type="color" name="backBackgroundColor" value={data.backBackgroundColor} onChange={handleChange} className="w-full h-10 rounded-lg cursor-pointer bg-white p-1 border border-slate-200" />
+            <div><span className={labelClass}>{t.bgFront}</span><input type="color" name="frontBackgroundColor" value={data.frontBackgroundColor} onChange={handleChange} className="w-full h-12 rounded-xl cursor-pointer bg-white p-1 border border-slate-200 shadow-sm" /></div>
+            <div><span className={labelClass}>{t.bgBack}</span><input type="color" name="backBackgroundColor" value={data.backBackgroundColor} onChange={handleChange} className="w-full h-12 rounded-xl cursor-pointer bg-white p-1 border border-slate-200 shadow-sm" /></div>
           </div>
-          <div className="grid grid-cols-3 gap-2">
-            <input type="color" name="primaryColor" value={data.primaryColor} onChange={handleChange} className="w-full h-8 rounded" />
-            <input type="color" name="secondaryColor" value={data.secondaryColor} onChange={handleChange} className="w-full h-8 rounded" />
-            <input type="color" name="textColor" value={data.textColor} onChange={handleChange} className="w-full h-8 rounded" />
+          <div className="grid grid-cols-3 gap-3">
+            <input type="color" name="primaryColor" value={data.primaryColor} onChange={handleChange} className="w-full h-10 rounded-xl cursor-pointer" title="Primary" />
+            <input type="color" name="secondaryColor" value={data.secondaryColor} onChange={handleChange} className="w-full h-10 rounded-xl cursor-pointer" title="Secondary" />
+            <input type="color" name="textColor" value={data.textColor} onChange={handleChange} className="w-full h-10 rounded-xl cursor-pointer" title="Text" />
           </div>
         </section>
 
-        <div className="space-y-4">
-          <section className="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-3">
-            <h3 className="text-[9px] font-black text-indigo-600 uppercase">{t.personalData}</h3>
+        {/* البيانات الشخصية */}
+        <section className="space-y-6">
+          <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-4">
+            <h3 className="text-[11px] font-black text-indigo-600 uppercase tracking-widest">{t.personalData}</h3>
             <input name="name" value={data.name} onChange={handleChange} className={inputClass} placeholder={t.fullName} />
             <input name="title" value={data.title} onChange={handleChange} className={inputClass} placeholder={t.jobTitle} />
-          </section>
+          </div>
 
-          <section className="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-4">
-            <h3 className="text-[9px] font-black text-orange-600 uppercase">{t.contactData}</h3>
-            <div>
-              <input name="phone" value={data.phone} onChange={handleChange} className={inputClass} placeholder={t.phone} />
-              <IconSelector value={data.icons.phone} onChange={(id) => handleIconChange('phone', id)} />
-            </div>
-            <div>
-              <input name="email" value={data.email} onChange={handleChange} className={inputClass} placeholder={t.email} />
-              <IconSelector value={data.icons.email} onChange={(id) => handleIconChange('email', id)} />
-            </div>
-            <div>
-              <input name="website" value={data.website} onChange={handleChange} className={inputClass} placeholder={t.website} />
-              <IconSelector value={data.icons.website} onChange={(id) => handleIconChange('website', id)} />
-            </div>
-            <div>
-              <input name="address" value={data.address} onChange={handleChange} className={inputClass} placeholder={t.address} />
-              <IconSelector value={data.icons.address} onChange={(id) => handleIconChange('address', id)} />
-            </div>
-          </section>
+          <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-5">
+            <h3 className="text-[11px] font-black text-orange-600 uppercase tracking-widest">{t.contactData}</h3>
+            {['phone', 'email', 'website', 'address'].map((field) => (
+              <div key={field} className="space-y-1">
+                <input name={field} value={(data as any)[field]} onChange={handleChange} className={inputClass} placeholder={(t as any)[field]} />
+                <IconSelector value={(data.icons as any)[field]} onChange={(id) => handleIconChange(field, id)} />
+              </div>
+            ))}
+          </div>
 
-          <section className="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-3">
-            <div className="flex justify-between items-center"><h3 className="text-[9px] font-black text-purple-600 uppercase">{t.extraFields}</h3><button onClick={addExtraField} className="text-[9px] bg-purple-600 text-white px-2 py-1 rounded-md font-bold">{t.addLine}</button></div>
+          {/* الحقول الإضافية */}
+          <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-[11px] font-black text-purple-600 uppercase tracking-widest">{t.extraFields}</h3>
+              <button onClick={addExtraField} className="text-[10px] bg-purple-600 text-white px-3 py-1.5 rounded-full font-black shadow-lg shadow-purple-100 hover:scale-105 transition-transform">{t.addLine}</button>
+            </div>
             {data.extraFields.map((f) => (
-              <div key={f.id} className="p-3 bg-white rounded-xl border border-slate-200 relative group">
-                <button onClick={() => removeExtraField(f.id)} className={`absolute ${lang === 'ar' ? '-left-2' : '-right-2'} -top-2 w-5 h-5 bg-red-500 text-white rounded-full text-[10px] hidden group-hover:flex items-center justify-center shadow-lg`}>×</button>
-                <input value={f.value} onChange={(e) => updateExtraField(f.id, { value: e.target.value })} className={`w-full p-2 text-xs font-bold ${lang === 'ar' ? 'text-right' : 'text-left'} border-b border-slate-100 focus:border-purple-500 outline-none mb-2`} placeholder="..." />
+              <div key={f.id} className="p-4 bg-white rounded-2xl border border-slate-200 relative group animate-in slide-in-from-top-2">
+                <button onClick={() => removeExtraField(f.id)} className={`absolute ${lang === 'ar' ? '-left-2' : '-right-2'} -top-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs items-center justify-center shadow-lg hidden group-hover:flex`}>×</button>
+                <input value={f.value} onChange={(e) => updateExtraField(f.id, { value: e.target.value })} className={`w-full p-2 text-sm font-bold ${lang === 'ar' ? 'text-right' : 'text-left'} border-b border-slate-100 focus:border-purple-500 outline-none mb-3`} placeholder="..." />
                 <IconSelector value={f.iconId} onChange={(id) => updateExtraField(f.id, { iconId: id })} />
               </div>
             ))}
-          </section>
+          </div>
 
-          <section className="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-3">
-            <h3 className="text-[9px] font-black text-emerald-600 uppercase">{t.corporateIdentity}</h3>
+          <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-4">
+            <h3 className="text-[11px] font-black text-emerald-600 uppercase tracking-widest">{t.corporateIdentity}</h3>
             <input name="company" value={data.company} onChange={handleChange} className={inputClass} placeholder={t.companyName} />
             <input name="tagline" value={data.tagline} onChange={handleChange} className={inputClass} placeholder={t.tagline} />
-          </section>
-        </div>
+          </div>
+        </section>
       </div>
       
-      <div className="pt-4 border-t border-slate-100 bg-white grid grid-cols-2 gap-3">
-          <button onClick={downloadPDF} disabled={!!exporting} className={`p-3 bg-blue-600 text-white rounded-xl font-black text-sm transition-all hover:bg-blue-700 active:scale-95`}>{t.downloadPDF}</button>
-          <button onClick={downloadImages} disabled={!!exporting} className={`p-3 bg-slate-800 text-white rounded-xl font-black text-sm transition-all hover:bg-black active:scale-95`}>{t.downloadPNG}</button>
-          <button onClick={downloadSVG} disabled={!!exporting} className={`col-span-2 p-3 bg-emerald-600 text-white rounded-xl font-black text-sm transition-all hover:bg-emerald-700 active:scale-95`}>{t.downloadSVG}</button>
+      {/* أزرار التحميل */}
+      <div className="pt-6 border-t border-slate-100 bg-white grid grid-cols-2 gap-4 sticky bottom-0 z-20">
+          <button onClick={downloadPDF} disabled={!!exporting} className="p-4 bg-blue-600 text-white rounded-2xl font-black text-sm transition-all hover:bg-blue-700 active:scale-95 shadow-xl shadow-blue-100 disabled:opacity-50">
+            {exporting === 'pdf' ? '...' : t.downloadPDF}
+          </button>
+          <button onClick={downloadImages} disabled={!!exporting} className="p-4 bg-slate-900 text-white rounded-2xl font-black text-sm transition-all hover:bg-black active:scale-95 shadow-xl shadow-slate-200 disabled:opacity-50">
+            {exporting === 'img' ? '...' : t.downloadPNG}
+          </button>
+          <button onClick={downloadSVG} disabled={!!exporting} className="col-span-2 p-4 bg-emerald-600 text-white rounded-2xl font-black text-sm transition-all hover:bg-emerald-700 active:scale-95 shadow-xl shadow-emerald-100 disabled:opacity-50">
+            {exporting === 'svg' ? '...' : t.downloadSVG}
+          </button>
       </div>
     </div>
   );
