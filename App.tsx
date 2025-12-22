@@ -18,9 +18,9 @@ const App: React.FC = () => {
         {/* Top Floating Header */}
         <header className="p-6 flex justify-between items-center sticky top-0 z-20 bg-white/60 backdrop-blur-lg border-b border-slate-200 no-print">
           <div className="flex items-center gap-3">
-             <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-blue-200">P</div>
+             <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-blue-200">C</div>
              <div>
-                <h1 className="text-lg font-black text-slate-900 leading-none">ProCard</h1>
+                <h1 className="text-lg font-black text-slate-900 leading-none">مصمم الكروت</h1>
                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Professional Design Hub</p>
              </div>
           </div>
