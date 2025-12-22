@@ -51,10 +51,25 @@ export const INITIAL_CARD_DATA = {
   address: 'الرياض، المملكة العربية السعودية',
   primaryColor: '#1e293b',
   secondaryColor: '#3b82f6',
-  backgroundColor: '#ffffff',
+  frontBackgroundColor: '#ffffff',
+  backBackgroundColor: '#1e293b',
   textColor: '#1e293b',
   layout: 'corporate' as const,
   fontFamily: "'Tajawal', sans-serif",
   logoText: 'TECH',
-  tagline: 'نبتكر لمستقبل أفضل'
+  tagline: 'نبتكر لمستقبل أفضل',
+  autoTextColor: true,
+  logoUrl: null,
+  // إعدادات افتراضية منفصلة
+  frontLogoScale: 0.5,
+  frontLogoX: 10,
+  frontLogoY: 10,
+  frontLogoVisible: true,
+  frontLogoWhite: false,
+  backLogoScale: 1.2,
+  backLogoX: 50,
+  backLogoY: 40,
+  backLogoVisible: true,
+  backLogoWhite: true,
+  logoBgRemoved: false
 };

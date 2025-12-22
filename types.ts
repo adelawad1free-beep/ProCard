@@ -24,12 +24,29 @@ export interface CardData {
   address: string;
   primaryColor: string;
   secondaryColor: string;
-  backgroundColor: string;
+  frontBackgroundColor: string;
+  backBackgroundColor: string;
   textColor: string;
   layout: CardLayout;
   fontFamily: string;
   logoText: string;
   tagline: string;
+  autoTextColor: boolean;
+  logoUrl: string | null;
+  // إعدادات الوجه الأمامي
+  frontLogoScale: number;
+  frontLogoX: number;
+  frontLogoY: number;
+  frontLogoVisible: boolean;
+  frontLogoWhite: boolean; // تحويل الشعار للأبيض في الأمام
+  // إعدادات الوجه الخلفي
+  backLogoScale: number;
+  backLogoX: number;
+  backLogoY: number;
+  backLogoVisible: boolean;
+  backLogoWhite: boolean; // تحويل الشعار للأبيض في الخلف
+  // معالجة الشعار
+  logoBgRemoved: boolean;
 }
 
 export interface Template {
