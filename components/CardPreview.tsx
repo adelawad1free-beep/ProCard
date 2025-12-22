@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { CardData, CardSide, ExtraField } from '../types';
 import { FLAT_ICONS } from '../constants';
 
@@ -9,6 +9,8 @@ interface CardPreviewProps {
 }
 
 const CardPreview: React.FC<CardPreviewProps> = ({ data, side }) => {
+  const [processedLogo, setProcessedLogo] = useState<string | null>(null);
+
   const getContrastColor = (hex: string) => {
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
@@ -16,6 +18,52 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, side }) => {
     const yiq = (r * 299 + g * 587 + b * 114) / 1000;
     return yiq >= 128 ? '#1e293b' : '#ffffff';
   };
+
+  const logoVisible = side === 'front' ? data.frontLogoVisible : data.backLogoVisible;
+  const logoScale = side === 'front' ? data.frontLogoScale : data.backLogoScale;
+  const logoX = side === 'front' ? data.frontLogoX : data.backLogoX;
+  const logoY = side === 'front' ? data.frontLogoY : data.backLogoY;
+  const isWhiteMode = side === 'front' ? data.frontLogoWhite : data.backLogoWhite;
+
+  // تأثير لمعالجة الشعار وجعله أبيض برمجياً لضمان الجودة عند التصدير
+  useEffect(() => {
+    if (!data.logoUrl) {
+      setProcessedLogo(null);
+      return;
+    }
+
+    if (!isWhiteMode) {
+      setProcessedLogo(data.logoUrl);
+      return;
+    }
+
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = data.logoUrl;
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+      
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const pixels = imageData.data;
+      
+      // تحويل كافة الألوان إلى الأبيض مع الحفاظ على الشفافية
+      for (let i = 0; i < pixels.length; i += 4) {
+        if (pixels[i + 3] > 0) { // إذا كان البكسل غير شفاف
+          pixels[i] = 255;   // R
+          pixels[i + 1] = 255; // G
+          pixels[i + 2] = 255; // B
+        }
+      }
+      
+      ctx.putImageData(imageData, 0, 0);
+      setProcessedLogo(canvas.toDataURL());
+    };
+  }, [data.logoUrl, isWhiteMode]);
 
   const getLayoutStyles = () => {
     switch (data.layout) {
@@ -34,12 +82,6 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, side }) => {
   const styles = getLayoutStyles();
   const currentBg = side === 'front' ? data.frontBackgroundColor : data.backBackgroundColor;
   const currentText = data.autoTextColor ? getContrastColor(currentBg) : data.textColor;
-
-  const logoVisible = side === 'front' ? data.frontLogoVisible : data.backLogoVisible;
-  const logoScale = side === 'front' ? data.frontLogoScale : data.backLogoScale;
-  const logoX = side === 'front' ? data.frontLogoX : data.backLogoX;
-  const logoY = side === 'front' ? data.frontLogoY : data.backLogoY;
-  const isWhiteMode = side === 'front' ? data.frontLogoWhite : data.backLogoWhite;
 
   const commonStyles = {
     backgroundColor: currentBg,
@@ -60,10 +102,10 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, side }) => {
   const LogoComponent = () => {
     if (!logoVisible) return null;
 
-    if (data.logoUrl) {
+    if (processedLogo) {
       return (
         <img 
-          src={data.logoUrl} 
+          src={processedLogo} 
           alt="Logo" 
           className="absolute z-20 pointer-events-none transition-all duration-300"
           style={{ 
@@ -72,8 +114,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, side }) => {
             transform: `translate(-50%, -50%) scale(${logoScale})`,
             maxWidth: '300px',
             maxHeight: '300px',
-            objectFit: 'contain',
-            filter: isWhiteMode ? 'brightness(0) invert(1)' : 'none'
+            objectFit: 'contain'
           }} 
         />
       );

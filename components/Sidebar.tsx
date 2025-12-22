@@ -2,7 +2,6 @@
 import React, { useState, useRef } from 'react';
 import { CardData, CardLayout, ExtraField } from '../types';
 import { TEMPLATES, ARABIC_FONTS, FLAT_ICONS } from '../constants';
-import { generateProfessionalContent } from '../services/geminiService';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 
@@ -12,7 +11,6 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ data, setData }) => {
-  const [loadingAI, setLoadingAI] = useState(false);
   const [exporting, setExporting] = useState<string | null>(null);
   const [activeLogoTab, setActiveLogoTab] = useState<'front' | 'back'>('back');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -94,19 +92,18 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData }) => {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const handleAIHelp = async () => {
-    setLoadingAI(true);
-    const suggestions = await generateProfessionalContent(data.title, data.company);
-    if (suggestions && suggestions.length > 0) {
-      setData(prev => ({ ...prev, tagline: suggestions[0] }));
-    }
-    setLoadingAI(false);
-  };
-
   const captureCard = async (id: string) => {
     const element = document.getElementById(id);
     if (!element) return null;
-    return await html2canvas(element, { scale: 4, useCORS: true, backgroundColor: null, logging: false });
+    
+    // نستخدم مقياساً عالياً جداً (6) لضمان الدقة في الطباعة واحترافية الصورة
+    return await html2canvas(element, { 
+      scale: 6, 
+      useCORS: true, 
+      backgroundColor: null, 
+      logging: false,
+      allowTaint: true
+    });
   };
 
   const downloadPDF = async () => {
@@ -115,12 +112,13 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData }) => {
       const frontCanvas = await captureCard('card-front');
       const backCanvas = await captureCard('card-back');
       if (!frontCanvas || !backCanvas) return;
+      
       const pdf = new jsPDF('l', 'mm', [85, 55]);
-      pdf.addImage(frontCanvas.toDataURL('image/png'), 'PNG', 0, 0, 85, 55);
+      pdf.addImage(frontCanvas.toDataURL('image/png', 1.0), 'PNG', 0, 0, 85, 55, undefined, 'SLOW');
       pdf.addPage([85, 55], 'l');
-      pdf.addImage(backCanvas.toDataURL('image/png'), 'PNG', 0, 0, 85, 55);
+      pdf.addImage(backCanvas.toDataURL('image/png', 1.0), 'PNG', 0, 0, 85, 55, undefined, 'SLOW');
       pdf.save(`ProCard_${data.name}.pdf`);
-    } catch (err) { console.error(err); }
+    } catch (err) { console.error("PDF Export Error:", err); }
     setExporting(null);
   };
 
@@ -129,23 +127,76 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData }) => {
     try {
       const frontCanvas = await captureCard('card-front');
       const backCanvas = await captureCard('card-back');
-      if (frontCanvas) {
+      
+      const download = (canvas: HTMLCanvasElement, name: string) => {
         const link = document.createElement('a');
-        link.download = `Front_${data.name}.png`;
-        link.href = frontCanvas.toDataURL('image/png');
+        link.download = `${name}_${data.name}.png`;
+        link.href = canvas.toDataURL('image/png', 1.0);
         link.click();
-      }
-      if (backCanvas) {
-        const link = document.createElement('a');
-        link.download = `Back_${data.name}.png`;
-        link.href = backCanvas.toDataURL('image/png');
-        link.click();
-      }
-    } catch (err) { console.error(err); }
+      };
+
+      if (frontCanvas) download(frontCanvas, 'الوجه_الأمامي');
+      // انتظار بسيط لضمان سلاسة التحميل المزدوج
+      await new Promise(resolve => setTimeout(resolve, 500));
+      if (backCanvas) download(backCanvas, 'الوجه_الخلفي');
+
+    } catch (err) { console.error("Image Export Error:", err); }
     setExporting(null);
   };
 
-  const inputClass = "w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 font-bold text-right shadow-sm text-slate-900 appearance-none";
+  const downloadSVG = async () => {
+    setExporting('svg');
+    try {
+      const sides = [
+        { id: 'card-front', name: 'الوجه_الأمامي' },
+        { id: 'card-back', name: 'الوجه_الخلفي' }
+      ];
+
+      for (const side of sides) {
+        const element = document.getElementById(side.id);
+        if (!element) continue;
+
+        const width = 500;
+        const height = 300;
+
+        // استخراج جميع الأنماط الخارجية لضمان تطابق الخطوط والألوان
+        const styleText = Array.from(document.styleSheets)
+          .filter(sheet => {
+            try { return !!sheet.cssRules; } catch { return false; }
+          })
+          .map(sheet => Array.from(sheet.cssRules).map(rule => rule.cssText).join('\n'))
+          .join('\n');
+
+        const svgContent = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+            <defs>
+              <style type="text/css">
+                @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
+                ${styleText}
+              </style>
+            </defs>
+            <foreignObject width="100%" height="100%">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="width: ${width}px; height: ${height}px;">
+                ${element.innerHTML}
+              </div>
+            </foreignObject>
+          </svg>
+        `;
+
+        const blob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = `${side.name}_${data.name}.svg`;
+        link.href = url;
+        link.click();
+        URL.revokeObjectURL(url);
+        await new Promise(r => setTimeout(r, 400));
+      }
+    } catch (err) { console.error("SVG Export Error:", err); }
+    setExporting(null);
+  };
+
+  const inputClass = "w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 font-bold text-right shadow-sm text-slate-900 appearance-none transition-all";
   const labelClass = "block text-sm font-extrabold text-slate-800 mb-1.5 mr-1";
   const colorLabelClass = "text-[10px] font-black text-slate-500 text-center mb-1 block";
   const sliderClass = "w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600";
@@ -155,6 +206,7 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData }) => {
       {Object.keys(FLAT_ICONS).map(iconId => (
         <button
           key={iconId}
+          type="button"
           onClick={() => onChange(iconId)}
           className={`p-1.5 rounded-md border transition-all ${value === iconId ? 'bg-blue-600 text-white border-blue-600' : 'bg-slate-50 text-slate-400 border-slate-100 hover:border-slate-300'}`}
         >
@@ -171,7 +223,7 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData }) => {
       <div className="mb-4 sticky top-0 bg-white z-10 pb-3 border-b border-slate-100 flex justify-between items-end">
         <div>
           <h2 className="text-xl font-black text-slate-900 leading-none mb-1">محرك التصميم الإبداعي</h2>
-          <p className="text-[10px] text-blue-600 font-black uppercase tracking-widest">Advanced Branding Suite</p>
+          <p className="text-[10px] text-blue-600 font-black uppercase tracking-widest">Premium Branding Suite</p>
         </div>
       </div>
 
@@ -339,16 +391,7 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData }) => {
           </section>
 
           <section className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-            <h3 className="text-[9px] font-black text-emerald-600 mb-3 flex justify-between items-center">
-              <span>الهوية المؤسسية</span>
-              <button 
-                onClick={handleAIHelp} 
-                disabled={loadingAI}
-                className="text-[9px] bg-[#1a1c1e] text-white px-3 py-1.5 rounded-full font-bold flex items-center gap-1.5 hover:bg-black transition-all shadow-sm active:scale-95 disabled:opacity-50"
-              >
-                {loadingAI ? 'جاري التوليد...' : 'ذكاء اصطناعي ✨'}
-              </button>
-            </h3>
+            <h3 className="text-[9px] font-black text-emerald-600 mb-3 uppercase">الهوية المؤسسية</h3>
             <div className="space-y-3">
               <input name="company" value={data.company} onChange={handleChange} className={inputClass} placeholder="اسم الشركة" />
               <input name="tagline" value={data.tagline} onChange={handleChange} className={inputClass} placeholder="الشعار اللفظي" />
@@ -358,8 +401,9 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData }) => {
       </div>
       
       <div className="pt-4 border-t border-slate-100 bg-white grid grid-cols-2 gap-3">
-          <button onClick={downloadPDF} disabled={!!exporting} className={`p-3 bg-blue-600 text-white rounded-xl font-black text-sm ${exporting === 'pdf' ? 'opacity-50 animate-pulse' : ''}`}>تحميل PDF</button>
-          <button onClick={downloadImages} disabled={!!exporting} className={`p-3 bg-slate-800 text-white rounded-xl font-black text-sm ${exporting === 'img' ? 'opacity-50 animate-pulse' : ''}`}>تحميل صور</button>
+          <button onClick={downloadPDF} disabled={!!exporting} className={`p-3 bg-blue-600 text-white rounded-xl font-black text-sm transition-all hover:bg-blue-700 active:scale-95 ${exporting === 'pdf' ? 'opacity-50 animate-pulse' : ''}`}>تحميل PDF</button>
+          <button onClick={downloadImages} disabled={!!exporting} className={`p-3 bg-slate-800 text-white rounded-xl font-black text-sm transition-all hover:bg-black active:scale-95 ${exporting === 'img' ? 'opacity-50 animate-pulse' : ''}`}>تحميل صور PNG</button>
+          <button onClick={downloadSVG} disabled={!!exporting} className={`col-span-2 p-3 bg-emerald-600 text-white rounded-xl font-black text-sm transition-all hover:bg-emerald-700 active:scale-95 ${exporting === 'svg' ? 'opacity-50 animate-pulse' : ''}`}>تحميل بصيغة SVG احترافية</button>
       </div>
     </div>
   );
