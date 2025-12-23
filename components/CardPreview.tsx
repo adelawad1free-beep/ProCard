@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { CardData, CardSide } from '../types';
 import { FLAT_ICONS } from '../constants';
@@ -57,7 +56,6 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, side }) => {
   const primary = data.primaryColor || '#3b82f6';
   const secondary = data.secondaryColor || '#10b981';
 
-  // توليد زخارف خلفية فريدة لكل نمط مع معالجة آمنة للـ IDs
   const Decoration = useMemo(() => {
     const safeId = (id: string) => `${side}-${id}`;
     
@@ -298,31 +296,37 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, side }) => {
         <LogoComponent />
         <div className="z-10 text-right relative space-y-1.5">
           <h1 className="text-4xl font-black leading-none mb-1 tracking-tight" style={{ color: data.autoTextColor ? currentText : primary }}>{data.name}</h1>
-          <p className="text-lg font-bold opacity-75 mb-8">{data.title}</p>
+          <p className="text-lg font-bold opacity-75 mb-4">{data.title}</p>
           
-          <div className="pt-8 border-t flex flex-col gap-3.5 opacity-90" style={{ borderColor: `${currentText}15` }}>
+          <div className="pt-4 border-t flex flex-col gap-2.5 opacity-90" style={{ borderColor: `${currentText}15` }}>
             {data.phone && (
-              <div className="flex items-center justify-end gap-3.5 text-[11px] font-black uppercase tracking-wider">
+              <div className="flex items-center justify-end gap-3.5 text-[10px] font-black uppercase tracking-wider">
                 <span>{data.phone}</span>
-                <div className="p-2 rounded-xl bg-current/5 shadow-sm"><FlatIcon id={data.icons.phone} size={14} /></div>
+                <div className="p-1.5 rounded-lg bg-current/5 shadow-sm"><FlatIcon id={data.icons.phone} size={12} /></div>
               </div>
             )}
             {data.email && (
-              <div className="flex items-center justify-end gap-3.5 text-[11px] font-black uppercase tracking-wider">
+              <div className="flex items-center justify-end gap-3.5 text-[10px] font-black uppercase tracking-wider">
                 <span>{data.email}</span>
-                <div className="p-2 rounded-xl bg-current/5 shadow-sm"><FlatIcon id={data.icons.email} size={14} /></div>
+                <div className="p-1.5 rounded-lg bg-current/5 shadow-sm"><FlatIcon id={data.icons.email} size={12} /></div>
               </div>
             )}
             {data.website && (
-              <div className="flex items-center justify-end gap-3.5 text-[11px] font-black uppercase tracking-wider">
+              <div className="flex items-center justify-end gap-3.5 text-[10px] font-black uppercase tracking-wider">
                 <span>{data.website}</span>
-                <div className="p-2 rounded-xl bg-current/5 shadow-sm"><FlatIcon id={data.icons.website} size={14} /></div>
+                <div className="p-1.5 rounded-lg bg-current/5 shadow-sm"><FlatIcon id={data.icons.website} size={12} /></div>
+              </div>
+            )}
+            {data.address && (
+              <div className="flex items-center justify-end gap-3.5 text-[10px] font-black uppercase tracking-wider">
+                <span>{data.address}</span>
+                <div className="p-1.5 rounded-lg bg-current/5 shadow-sm"><FlatIcon id={data.icons.address} size={12} /></div>
               </div>
             )}
             {data.extraFields.map((f) => (
-              <div key={f.id} className="flex items-center justify-end gap-3.5 text-[11px] font-black uppercase tracking-wider">
+              <div key={f.id} className="flex items-center justify-end gap-3.5 text-[10px] font-black uppercase tracking-wider">
                 <span>{f.value}</span>
-                <div className="p-2 rounded-xl bg-current/5 shadow-sm"><FlatIcon id={f.iconId} size={14} /></div>
+                <div className="p-1.5 rounded-lg bg-current/5 shadow-sm"><FlatIcon id={f.iconId} size={12} /></div>
               </div>
             ))}
           </div>
@@ -338,15 +342,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, side }) => {
         <div className="mt-auto z-10 text-center relative group">
             <h2 className="text-3xl font-black mb-1 drop-shadow-sm tracking-tight" style={{ color: data.autoTextColor ? currentText : primary }}>{data.company}</h2>
             <div className="h-1.5 w-16 bg-current mx-auto mb-4 rounded-full opacity-30 shadow-inner"></div>
-            <p className="text-[12px] font-black tracking-[0.4em] uppercase opacity-60 mb-8">{data.tagline}</p>
-            {data.address && (
-              <div className="px-5 py-2.5 bg-current/5 rounded-2xl backdrop-blur-md border border-current/5 shadow-sm">
-                <div className="text-[10px] font-black flex items-center justify-center gap-3">
-                  <FlatIcon id={data.icons.address} size={12} />
-                  <span>{data.address}</span>
-                </div>
-              </div>
-            )}
+            <p className="text-[12px] font-black tracking-[0.4em] uppercase opacity-60 mb-4">{data.tagline}</p>
         </div>
     </div>
   );
