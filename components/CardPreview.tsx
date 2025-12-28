@@ -14,6 +14,12 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState<string | null>(null);
 
+  // تحديد ما إذا كان المحتوى عربياً بناءً على فحص بسيط للاسم أو الشركة
+  const isArabic = useMemo(() => {
+    const arabicPattern = /[\u0600-\u06FF]/;
+    return arabicPattern.test(data.name) || arabicPattern.test(data.company) || arabicPattern.test(data.title);
+  }, [data.name, data.company, data.title]);
+
   const getContrastColor = (hex: string) => {
     if (!hex) return '#ffffff';
     const r = parseInt(hex.slice(1, 3), 16);
@@ -172,8 +178,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
       case 'corporate':
         return (
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div className="absolute top-0 right-0 w-2 h-full" style={{ backgroundColor: primary }}></div>
-            <div className="absolute top-10 right-2 w-24 h-px opacity-30" style={{ backgroundColor: primary }}></div>
+            <div className={`absolute top-0 ${isArabic ? 'left-0' : 'right-0'} w-2 h-full`} style={{ backgroundColor: primary }}></div>
+            <div className={`absolute top-10 ${isArabic ? 'left-2' : 'right-2'} w-24 h-px opacity-30`} style={{ backgroundColor: primary }}></div>
           </div>
         );
       case 'luxury':
@@ -186,8 +192,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
       case 'architect':
         return (
           <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-10 left-10 w-2 h-2 border-t border-l border-current opacity-20"></div>
-            <div className="absolute bottom-10 right-10 w-2 h-2 border-b border-r border-current opacity-20"></div>
+            <div className={`absolute top-10 ${isArabic ? 'right-10' : 'left-10'} w-2 h-2 border-t ${isArabic ? 'border-r' : 'border-l'} border-current opacity-20`}></div>
+            <div className={`absolute bottom-10 ${isArabic ? 'left-10' : 'right-10'} w-2 h-2 border-b ${isArabic ? 'border-l' : 'border-r'} border-current opacity-20`}></div>
           </div>
         );
       case 'glass':
@@ -201,13 +207,17 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
       default:
         return null;
     }
-  }, [data.layout, primary, secondary]);
+  }, [data.layout, primary, secondary, isArabic]);
 
   const commonStyles = {
     backgroundColor: currentBg,
     color: currentText,
     fontFamily: data.fontFamily,
-    transition: dragging ? 'none' : 'background-color 0.4s ease, color 0.4s ease'
+    direction: isArabic ? 'rtl' : 'ltr' as any,
+    transition: dragging ? 'none' : 'background-color 0.4s ease, color 0.4s ease',
+    // لضمان اتصال الحروف العربية ومنع تقطعها
+    letterSpacing: isArabic ? '0' : 'normal',
+    fontFeatureSettings: isArabic ? '"kern" 1, "liga" 1, "clig" 1, "calt" 1' : 'normal'
   };
 
   const FlatIcon = ({ id, size = 12 }: { id: string, size?: number }) => {
@@ -226,7 +236,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
         onMouseDown={handleMouseDown('logo')}
         src={processedLogo} 
         alt="Logo" 
-        className={`absolute z-20 cursor-move transition-shadow hover:ring-1 hover:ring-blue-400 hover:ring-offset-2 rounded ${dragging === 'logo' ? 'opacity-50 grayscale' : ''}`}
+        className={`absolute z-20 cursor-move transition-shadow hover:ring-1 hover:ring-blue-400 hover:ring-offset-2 rounded-none ${dragging === 'logo' ? 'opacity-50 grayscale' : ''}`}
         style={{ 
           left: `${logoX}%`, top: `${logoY}%`,
           transform: `translate(-50%, -50%) scale(${logoScale})`,
@@ -239,6 +249,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
   return (
     <div 
       ref={cardRef}
+      dir={isArabic ? 'rtl' : 'ltr'}
       className="relative w-[500px] h-[300px] overflow-hidden rounded-none flex flex-col p-14 shadow-2xl bg-white select-none border border-slate-200/50" 
       style={commonStyles}
     >
@@ -250,16 +261,16 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
           <>
             <div 
               onMouseDown={handleMouseDown('name')}
-              className={`absolute z-10 text-right cursor-move group p-2 border border-transparent hover:border-blue-200 hover:border-dashed rounded-none transition-colors ${dragging === 'name' ? 'opacity-50' : ''}`}
+              className={`absolute z-10 ${isArabic ? 'text-right' : 'text-left'} cursor-move group p-2 border border-transparent hover:border-blue-200 hover:border-dashed rounded-none transition-colors ${dragging === 'name' ? 'opacity-50' : ''}`}
               style={{ left: `${data.frontNameX}%`, top: `${data.frontNameY}%`, transform: 'translate(-50%, -50%)', minWidth: '200px' }}
             >
-              <h1 className="font-bold mb-0.5 tracking-tight leading-none" style={{ fontSize: `${data.nameFontSize}px`, color: data.autoTextColor ? currentText : primary }}>{data.name}</h1>
-              <p className="font-medium opacity-50 leading-tight" style={{ fontSize: `${data.titleFontSize}px` }}>{data.title}</p>
+              <h1 className={`font-bold mb-0.5 leading-none ${isArabic ? '' : 'tracking-tight'}`} style={{ fontSize: `${data.nameFontSize}px`, color: data.autoTextColor ? currentText : primary, letterSpacing: isArabic ? '0' : 'inherit' }}>{data.name}</h1>
+              <p className="font-medium opacity-50 leading-tight" style={{ fontSize: `${data.titleFontSize}px`, letterSpacing: isArabic ? '0' : 'inherit' }}>{data.title}</p>
             </div>
 
             <div 
               onMouseDown={handleMouseDown('contact')}
-              className={`absolute z-10 text-right cursor-move group p-3 border border-transparent hover:border-blue-200 hover:border-dashed rounded-none transition-colors ${dragging === 'contact' ? 'opacity-50' : ''}`}
+              className={`absolute z-10 ${isArabic ? 'text-right' : 'text-left'} cursor-move group p-3 border border-transparent hover:border-blue-200 hover:border-dashed rounded-none transition-colors ${dragging === 'contact' ? 'opacity-50' : ''}`}
               style={{ 
                 left: `${data.frontContactX}%`, top: `${data.frontContactY}%`, 
                 transform: 'translate(-50%, -50%)',
@@ -271,16 +282,16 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
                    const val = (data as any)[field];
                    if(!val) return null;
                    return (
-                     <div key={field} className="flex items-center justify-end gap-2 font-bold tracking-wide" style={{ fontSize: `${data.contactFontSize}px` }}>
-                       <span>{val}</span>
+                     <div key={field} className={`flex items-center gap-2 font-bold`} style={{ fontSize: `${data.contactFontSize}px`, letterSpacing: isArabic ? '0' : '0.025em' }}>
                        <FlatIcon id={(data.icons as any)[field]} size={data.contactFontSize + 2} />
+                       <span>{val}</span>
                      </div>
                    );
                 })}
                 {data.extraFields.map((f) => (
-                  <div key={f.id} className="flex items-center justify-end gap-2 font-bold tracking-wide" style={{ fontSize: `${data.contactFontSize}px` }}>
-                    <span>{f.value}</span>
+                  <div key={f.id} className={`flex items-center gap-2 font-bold`} style={{ fontSize: `${data.contactFontSize}px`, letterSpacing: isArabic ? '0' : '0.025em' }}>
                     <FlatIcon id={f.iconId} size={data.contactFontSize + 2} />
+                    <span>{f.value}</span>
                   </div>
                 ))}
               </div>
@@ -292,9 +303,9 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
             className={`absolute z-10 text-center cursor-move group p-4 border border-transparent hover:border-blue-200 hover:border-dashed rounded-none transition-colors ${dragging === 'company' ? 'opacity-50' : ''}`}
             style={{ left: `${data.backCompanyX}%`, top: `${data.backCompanyY}%`, transform: 'translate(-50%, -50%)', minWidth: '300px' }}
           >
-              <h2 className="font-bold mb-1 tracking-tight" style={{ fontSize: `${data.companyFontSize}px`, color: data.autoTextColor ? currentText : primary }}>{data.company}</h2>
+              <h2 className={`font-bold mb-1 ${isArabic ? '' : 'tracking-tight'}`} style={{ fontSize: `${data.companyFontSize}px`, color: data.autoTextColor ? currentText : primary, letterSpacing: isArabic ? '0' : 'inherit' }}>{data.company}</h2>
               <div className="h-0.5 w-10 bg-current mx-auto mb-3 opacity-20"></div>
-              <p className="font-bold tracking-widest uppercase opacity-40" style={{ fontSize: `${data.taglineFontSize}px` }}>{data.tagline}</p>
+              <p className={`font-bold uppercase opacity-40 ${isArabic ? '' : 'tracking-widest'}`} style={{ fontSize: `${data.taglineFontSize}px`, letterSpacing: isArabic ? '0' : 'inherit' }}>{data.tagline}</p>
           </div>
         )}
     </div>

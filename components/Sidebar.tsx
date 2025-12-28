@@ -93,12 +93,23 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
   const captureCard = async (id: string) => {
     const element = document.getElementById(id);
     if (!element) return null;
+    
+    // تحسين خيارات الالتقاط لضمان أعلى دقة وسلامة النصوص العربية
     return await html2canvas(element, { 
-      scale: 4, 
+      scale: 5, // رفع الدقة للطباعة (600DPI تقريباً)
       useCORS: true, 
       backgroundColor: null, 
       logging: false,
-      allowTaint: true
+      allowTaint: true,
+      scrollX: 0,
+      scrollY: -window.scrollY,
+      onclone: (clonedDoc) => {
+        const el = clonedDoc.getElementById(id);
+        if (el) {
+          el.style.transform = 'none';
+          el.style.borderRadius = '0';
+        }
+      }
     });
   };
 
@@ -108,12 +119,24 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
       const frontCanvas = await captureCard('card-front');
       const backCanvas = await captureCard('card-back');
       if (!frontCanvas || !backCanvas) return;
-      const pdf = new jsPDF('l', 'mm', [85, 55]);
-      pdf.addImage(frontCanvas.toDataURL('image/png', 1.0), 'PNG', 0, 0, 85, 55);
+      
+      const pdf = new jsPDF({
+        orientation: 'l',
+        unit: 'mm',
+        format: [85, 55] // مقاس الكرت القياسي بالملي
+      });
+
+      // إضافة الوجه الأمامي كصورة عالية الدقة لضمان بقاء الحروف العربية متصلة
+      pdf.addImage(frontCanvas.toDataURL('image/png', 1.0), 'PNG', 0, 0, 85, 55, undefined, 'FAST');
+      
       pdf.addPage([85, 55], 'l');
-      pdf.addImage(backCanvas.toDataURL('image/png', 1.0), 'PNG', 0, 0, 85, 55);
-      pdf.save(`Card_${data.name}.pdf`);
-    } catch (err) { console.error(err); }
+      pdf.addImage(backCanvas.toDataURL('image/png', 1.0), 'PNG', 0, 0, 85, 55, undefined, 'FAST');
+      
+      pdf.save(`Card_${data.name.replace(/\s+/g, '_')}.pdf`);
+    } catch (err) { 
+      console.error("PDF Export Error:", err);
+      alert("حدث خطأ أثناء تصدير PDF. يرجى تجربة حفظ الصور بدلاً من ذلك.");
+    }
     setExporting(null);
   };
 
@@ -130,7 +153,7 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
         link.click();
       };
       save(front, t.frontSide);
-      setTimeout(() => save(back, t.backSide), 300);
+      setTimeout(() => save(back, t.backSide), 500);
     } catch (err) { console.error(err); }
     setExporting(null);
   };
@@ -151,7 +174,7 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
         const svgContent = `
           <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
             <foreignObject width="100%" height="100%">
-              <div xmlns="http://www.w3.org/1999/xhtml" style="width: ${width}px; height: ${height}px;">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="width: ${width}px; height: ${height}px; direction: ${lang === 'ar' ? 'rtl' : 'ltr'};">
                 ${cleanInnerHtml}
               </div>
             </foreignObject>
@@ -164,7 +187,7 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
         link.href = url;
         link.click();
         URL.revokeObjectURL(url);
-        await new Promise(r => setTimeout(r, 400));
+        await new Promise(r => setTimeout(r, 600));
       }
     } catch (err) { console.error(err); }
     setExporting(null);
