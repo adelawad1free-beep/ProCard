@@ -1,5 +1,5 @@
 
-import { Template, CardFont } from './types';
+import { Template, CardFont, Pattern } from './types';
 
 export const FLAT_ICONS: Record<string, string> = {
   phone: "M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z",
@@ -25,6 +25,18 @@ export const TEMPLATES: Template[] = [
   { id: 'stellar', name: 'النخبة (Elite)', description: 'تدرج احترافي خافت جداً' }
 ];
 
+export const PATTERNS: Pattern[] = [
+  { id: 'none', name: 'بدون نمط', nameEn: 'None' },
+  { id: 'dots', name: 'نقاط هندسية', nameEn: 'Dots' },
+  { id: 'grid', name: 'شبكة العمل', nameEn: 'Grid' },
+  { id: 'stripes', name: 'خطوط رسمية', nameEn: 'Stripes' },
+  { id: 'topography', name: 'منحنيات عصرية', nameEn: 'Curves' },
+  { id: 'polygons', name: 'مضلعات خفيفة', nameEn: 'Polygons' },
+  { id: 'circuit', name: 'مسارات تقنية', nameEn: 'Circuit' },
+  { id: 'bubbles', name: 'هالة احترافية', nameEn: 'Halos' },
+  { id: 'bauhaus', name: 'فن تجريدي', nameEn: 'Bauhaus' }
+];
+
 export const ARABIC_FONTS: CardFont[] = [
   { id: 'tajawal', name: 'تجوال (Tajawal)', family: "'Tajawal', sans-serif" },
   { id: 'cairo', name: 'كايرو (Cairo)', family: "'Cairo', sans-serif" },
@@ -47,6 +59,7 @@ export const INITIAL_CARD_DATA_AR = {
   backBackgroundColor: '#0f172a',
   textColor: '#1e293b',
   layout: 'corporate' as const,
+  pattern: 'dots' as const,
   fontFamily: "'Tajawal', sans-serif",
   logoText: 'VISION',
   tagline: 'نصنع المستقبل بإتقان',
@@ -99,6 +112,7 @@ export const INITIAL_CARD_DATA_EN = {
   backBackgroundColor: '#0f172a',
   textColor: '#1e293b',
   layout: 'corporate' as const,
+  pattern: 'dots' as const,
   fontFamily: "sans-serif",
   logoText: 'VISION',
   tagline: 'Crafting the future with excellence',
@@ -150,6 +164,7 @@ export const TRANSLATIONS = {
     exportEngineMsg: "كرت العمل الخاص بك جاهز للطباعة بدقة 300DPI. يمكنك سحب العناصر لتغيير مكانها.",
     allRightsReserved: "جميع الحقوق محفوظة 2025",
     layout: "القالب",
+    bgPattern: "نمط الخلفية",
     font: "الخط",
     logoManagement: "الشعار",
     uploadLogo: "رفع شعار",
@@ -196,6 +211,7 @@ export const TRANSLATIONS = {
     exportEngineMsg: "Your card is ready for 300DPI professional print. Drag elements to reposition.",
     allRightsReserved: "All Rights Reserved 2025",
     layout: "Layout",
+    bgPattern: "Background Pattern",
     font: "Font",
     logoManagement: "Logo",
     uploadLogo: "Upload Logo",

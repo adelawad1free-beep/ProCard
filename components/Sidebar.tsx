@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { CardData, ExtraField } from '../types';
-import { TEMPLATES, ARABIC_FONTS, FLAT_ICONS, TRANSLATIONS } from '../constants';
+import { TEMPLATES, ARABIC_FONTS, FLAT_ICONS, TRANSLATIONS, PATTERNS } from '../constants';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 
@@ -225,6 +225,20 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
                   {ARABIC_FONTS.map(f => <option key={f.id} value={f.family} style={{ fontFamily: f.family }}>{f.name}</option>)}
                 </select>
              </div>
+          </div>
+          <div>
+              <label className={labelClass}>{t.bgPattern}</label>
+              <div className="grid grid-cols-3 gap-2">
+                {PATTERNS.map(p => (
+                  <button 
+                    key={p.id} 
+                    onClick={() => setData(prev => ({ ...prev, pattern: p.id }))}
+                    className={`px-3 py-2 text-[10px] font-bold rounded-xl border transition-all ${data.pattern === p.id ? 'bg-slate-900 text-white border-slate-900 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'}`}
+                  >
+                    {lang === 'ar' ? p.name : p.nameEn}
+                  </button>
+                ))}
+              </div>
           </div>
         </section>
 

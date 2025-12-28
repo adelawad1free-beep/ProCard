@@ -1,12 +1,15 @@
 
 export type CardSide = 'front' | 'back';
 
-// Fix: Added 'architect' to the CardLayout union to allow it in templates and match component usage
 export type CardLayout = 
   | 'minimal' | 'corporate' | 'luxury' | 'modern' | 'tech' 
   | 'glass' | 'prism' | 'royal' | 'brutalist' | 'origami' 
   | 'waves' | 'blueprint' | 'stellar' | 'mosaic' | 'neon' 
   | 'abstract' | 'eco' | 'retro' | 'circuit' | 'duotone' | 'architect';
+
+export type CardPattern = 
+  | 'none' | 'dots' | 'grid' | 'stripes' | 'topography' | 'polygons' 
+  | 'waves' | 'circuit' | 'lines' | 'bauhaus' | 'bubbles';
 
 export interface CardFont {
   id: string;
@@ -35,6 +38,7 @@ export interface CardData {
   backBackgroundColor: string;
   textColor: string;
   layout: CardLayout;
+  pattern: CardPattern; // New property
   fontFamily: string;
   logoText: string;
   tagline: string;
@@ -59,7 +63,7 @@ export interface CardData {
   frontContactY: number;
   backCompanyX: number;
   backCompanyY: number;
-  // Font Sizes (New)
+  // Font Sizes
   nameFontSize: number;
   titleFontSize: number;
   contactFontSize: number;
@@ -79,4 +83,10 @@ export interface Template {
   id: CardLayout;
   name: string;
   description: string;
+}
+
+export interface Pattern {
+  id: CardPattern;
+  name: string;
+  nameEn: string;
 }

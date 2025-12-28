@@ -69,14 +69,11 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!dragging || !cardRef.current || !setData) return;
-
       const rect = cardRef.current.getBoundingClientRect();
       let x = ((e.clientX - rect.left) / rect.width) * 100;
       let y = ((e.clientY - rect.top) / rect.height) * 100;
-
       x = Math.max(0, Math.min(100, x));
       y = Math.max(0, Math.min(100, y));
-
       const update: Partial<CardData> = {};
       if (dragging === 'logo') {
         if (side === 'front') { update.frontLogoX = x; update.frontLogoY = y; }
@@ -88,12 +85,9 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
       } else if (dragging === 'company') {
         update.backCompanyX = x; update.backCompanyY = y;
       }
-
       setData({ ...data, ...update });
     };
-
     const handleMouseUp = () => setDragging(null);
-
     if (dragging) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
@@ -104,34 +98,96 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
     };
   }, [dragging, side, data, setData]);
 
-  const Decoration = useMemo(() => {
-    const safeId = (id: string) => `${side}-${id}`;
-    
+  const PatternDecoration = useMemo(() => {
+    const patternId = `${side}-pattern-${data.pattern}`;
+    const patternColor = currentText;
+
+    switch (data.pattern) {
+      case 'dots':
+        return (
+          <div className="absolute inset-0 pointer-events-none opacity-[0.04]">
+             <svg width="100%" height="100%"><pattern id={patternId} width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.5" fill={patternColor}/></pattern><rect width="100%" height="100%" fill={`url(#${patternId})`}/></svg>
+          </div>
+        );
+      case 'grid':
+        return (
+          <div className="absolute inset-0 pointer-events-none opacity-[0.03]">
+             <svg width="100%" height="100%"><pattern id={patternId} width="30" height="30" patternUnits="userSpaceOnUse"><path d="M 30 0 L 0 0 0 30" fill="none" stroke={patternColor} strokeWidth="0.5"/></pattern><rect width="100%" height="100%" fill={`url(#${patternId})`}/></svg>
+          </div>
+        );
+      case 'stripes':
+        return (
+          <div className="absolute inset-0 pointer-events-none opacity-[0.04]">
+             <svg width="100%" height="100%"><pattern id={patternId} width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="40" stroke={patternColor} strokeWidth="8"/></pattern><rect width="100%" height="100%" fill={`url(#${patternId})`}/></svg>
+          </div>
+        );
+      case 'topography':
+        return (
+          <div className="absolute inset-0 pointer-events-none opacity-[0.05]">
+            <svg width="100%" height="100%" viewBox="0 0 500 300" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0,100 Q125,50 250,100 T500,100 M0,150 Q125,100 250,150 T500,150 M0,200 Q125,150 250,200 T500,200" stroke={patternColor} fill="none" strokeWidth="1" />
+            </svg>
+          </div>
+        );
+      case 'polygons':
+        return (
+          <div className="absolute inset-0 pointer-events-none opacity-[0.03]">
+            <svg width="100%" height="100%" viewBox="0 0 500 300">
+              <polygon points="0,0 150,0 75,100" fill={patternColor} />
+              <polygon points="500,300 350,300 425,200" fill={patternColor} />
+              <polygon points="250,150 300,100 350,150" fill={patternColor} />
+            </svg>
+          </div>
+        );
+      case 'circuit':
+        return (
+          <div className="absolute inset-0 pointer-events-none opacity-[0.04]">
+             <svg width="100%" height="100%"><pattern id={patternId} width="100" height="100" patternUnits="userSpaceOnUse"><path d="M0 50 L50 50 L50 100 M50 0 L50 50 L100 50" fill="none" stroke={patternColor} strokeWidth="1"/><circle cx="50" cy="50" r="3" fill={patternColor}/></pattern><rect width="100%" height="100%" fill={`url(#${patternId})`}/></svg>
+          </div>
+        );
+      case 'bubbles':
+        return (
+          <div className="absolute inset-0 pointer-events-none opacity-[0.03]">
+             <svg width="100%" height="100%"><circle cx="10%" cy="10%" r="50" fill={patternColor}/><circle cx="90%" cy="90%" r="80" fill={patternColor}/><circle cx="50%" cy="50%" r="30" fill={patternColor}/></svg>
+          </div>
+        );
+      case 'bauhaus':
+        return (
+          <div className="absolute inset-0 pointer-events-none opacity-[0.04]">
+            <svg width="100%" height="100%" viewBox="0 0 500 300">
+              <rect x="20" y="20" width="40" height="40" fill={patternColor} />
+              <circle cx="460" cy="260" r="30" fill={patternColor} />
+              <path d="M400,20 L480,100" stroke={patternColor} strokeWidth="10" />
+            </svg>
+          </div>
+        );
+      case 'none':
+      default:
+        return null;
+    }
+  }, [data.pattern, currentText, side]);
+
+  const LayoutDecoration = useMemo(() => {
     switch (data.layout) {
       case 'corporate':
         return (
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div className="absolute top-0 right-0 w-2 h-full opacity-100" style={{ backgroundColor: primary }}></div>
-            <div className="absolute top-0 left-0 w-full h-1 opacity-10" style={{ backgroundColor: primary }}></div>
+            <div className="absolute top-0 right-0 w-2 h-full" style={{ backgroundColor: primary }}></div>
             <div className="absolute top-10 right-2 w-24 h-px opacity-30" style={{ backgroundColor: primary }}></div>
-            <div className="absolute bottom-10 left-10 w-12 h-px opacity-30" style={{ backgroundColor: primary }}></div>
           </div>
         );
       case 'luxury':
         return (
           <div className="absolute inset-0 pointer-events-none p-8">
             <div className="absolute inset-4 border border-current opacity-10"></div>
-            <div className="absolute inset-6 border-[0.5px] border-current opacity-5"></div>
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-12 opacity-20" style={{ backgroundColor: primary }}></div>
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-px h-12 opacity-20" style={{ backgroundColor: primary }}></div>
           </div>
         );
-      case 'modern':
+      case 'architect':
         return (
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div className="absolute top-0 right-0 w-1/3 h-full bg-slate-100/10 -skew-x-6 translate-x-1/4"></div>
-            <div className="absolute bottom-0 left-0 w-full h-px opacity-20" style={{ backgroundColor: secondary }}></div>
-            <div className="absolute top-0 right-0 w-1 h-24 opacity-50" style={{ backgroundColor: secondary }}></div>
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-10 left-10 w-2 h-2 border-t border-l border-current opacity-20"></div>
+            <div className="absolute bottom-10 right-10 w-2 h-2 border-b border-r border-current opacity-20"></div>
           </div>
         );
       case 'glass':
@@ -139,45 +195,13 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
           <div className="absolute inset-0 pointer-events-none p-10 flex items-center justify-center">
             <div className="absolute top-[-5%] left-[-5%] w-[40%] h-[40%] rounded-full opacity-10 blur-3xl" style={{ backgroundColor: primary }}></div>
             <div className="absolute bottom-[-5%] right-[-5%] w-[40%] h-[40%] rounded-full opacity-10 blur-3xl" style={{ backgroundColor: secondary }}></div>
-            <div className="w-full h-full backdrop-blur-md bg-white/5 border border-white/20 rounded-[30px] shadow-sm"></div>
+            <div className="w-full h-full backdrop-blur-md bg-white/5 border border-white/20 rounded-none shadow-sm"></div>
           </div>
         );
-      case 'tech':
-        return (
-          <div className="absolute inset-0 pointer-events-none opacity-[0.03]">
-            <svg width="100%" height="100%"><pattern id={safeId("tech-dot")} width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill={primary}/></pattern><rect width="100%" height="100%" fill={`url(#${safeId("tech-dot")})`}/></svg>
-          </div>
-        );
-      case 'architect':
-        return (
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div className="absolute top-1/2 left-0 w-full h-px opacity-5 bg-current"></div>
-            <div className="absolute top-0 left-1/2 w-px h-full opacity-5 bg-current"></div>
-            <div className="absolute top-10 left-10 w-2 h-2 border-t border-l border-current opacity-20"></div>
-            <div className="absolute bottom-10 right-10 w-2 h-2 border-b border-r border-current opacity-20"></div>
-          </div>
-        );
-      case 'stellar':
-        return (
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div className="absolute inset-0 opacity-[0.02]" style={{ background: `radial-gradient(circle at 100% 0%, ${primary}, transparent)` }}></div>
-            <div className="absolute bottom-4 left-4 flex gap-1 opacity-20">
-              <div className="w-1 h-1 rounded-full bg-current"></div>
-              <div className="w-1 h-1 rounded-full bg-current"></div>
-              <div className="w-1 h-1 rounded-full bg-current"></div>
-            </div>
-          </div>
-        );
-      case 'minimal':
       default:
-        return (
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-8 left-8 w-4 h-px opacity-20 bg-current"></div>
-            <div className="absolute top-8 left-8 w-px h-4 opacity-20 bg-current"></div>
-          </div>
-        );
+        return null;
     }
-  }, [data.layout, primary, secondary, side]);
+  }, [data.layout, primary, secondary]);
 
   const commonStyles = {
     backgroundColor: currentBg,
@@ -212,88 +236,67 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
     );
   };
 
-  if (side === 'front') {
-    return (
-      <div 
-        ref={cardRef}
-        className="relative w-[500px] h-[300px] overflow-hidden rounded-xl flex flex-col p-14 shadow-xl bg-white select-none border border-slate-200/50" 
-        style={commonStyles}
-      >
-        {Decoration}
-        <LogoComponent />
-        
-        <div 
-          onMouseDown={handleMouseDown('name')}
-          className={`absolute z-10 text-right cursor-move group p-2 border border-transparent hover:border-blue-200 hover:border-dashed rounded-lg transition-colors ${dragging === 'name' ? 'opacity-50' : ''}`}
-          style={{ left: `${data.frontNameX}%`, top: `${data.frontNameY}%`, transform: 'translate(-50%, -50%)', minWidth: '200px' }}
-        >
-          <h1 className="font-bold mb-0.5 tracking-tight leading-none" style={{ fontSize: `${data.nameFontSize}px`, color: data.autoTextColor ? currentText : primary }}>{data.name}</h1>
-          <p className="font-medium opacity-50 leading-tight" style={{ fontSize: `${data.titleFontSize}px` }}>{data.title}</p>
-        </div>
-
-        <div 
-          onMouseDown={handleMouseDown('contact')}
-          className={`absolute z-10 text-right cursor-move group p-3 border border-transparent hover:border-blue-200 hover:border-dashed rounded-lg transition-colors ${dragging === 'contact' ? 'opacity-50' : ''}`}
-          style={{ 
-            left: `${data.frontContactX}%`, top: `${data.frontContactY}%`, 
-            transform: 'translate(-50%, -50%)',
-            minWidth: '240px'
-          }}
-        >
-          <div className="flex flex-col gap-1.5 opacity-80">
-            {data.phone && (
-              <div className="flex items-center justify-end gap-2 font-bold tracking-wide" style={{ fontSize: `${data.contactFontSize}px` }}>
-                <span>{data.phone}</span>
-                <FlatIcon id={data.icons.phone} size={data.contactFontSize + 2} />
-              </div>
-            )}
-            {data.email && (
-              <div className="flex items-center justify-end gap-2 font-bold tracking-wide" style={{ fontSize: `${data.contactFontSize}px` }}>
-                <span>{data.email}</span>
-                <FlatIcon id={data.icons.email} size={data.contactFontSize + 2} />
-              </div>
-            )}
-            {data.website && (
-              <div className="flex items-center justify-end gap-2 font-bold tracking-wide" style={{ fontSize: `${data.contactFontSize}px` }}>
-                <span>{data.website}</span>
-                <FlatIcon id={data.icons.website} size={data.contactFontSize + 2} />
-              </div>
-            )}
-            {data.address && (
-              <div className="flex items-center justify-end gap-2 font-bold tracking-wide" style={{ fontSize: `${data.contactFontSize}px` }}>
-                <span>{data.address}</span>
-                <FlatIcon id={data.icons.address} size={data.contactFontSize + 2} />
-              </div>
-            )}
-            {data.extraFields.map((f) => (
-              <div key={f.id} className="flex items-center justify-end gap-2 font-bold tracking-wide" style={{ fontSize: `${data.contactFontSize}px` }}>
-                <span>{f.value}</span>
-                <FlatIcon id={f.iconId} size={data.contactFontSize + 2} />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div 
       ref={cardRef}
-      className="relative w-[500px] h-[300px] overflow-hidden rounded-xl flex flex-col items-center justify-center p-12 shadow-xl bg-white select-none border border-slate-200/50" 
+      className="relative w-[500px] h-[300px] overflow-hidden rounded-none flex flex-col p-14 shadow-2xl bg-white select-none border border-slate-200/50" 
       style={commonStyles}
     >
-        {Decoration}
+        {PatternDecoration}
+        {LayoutDecoration}
         <LogoComponent />
-        <div 
-          onMouseDown={handleMouseDown('company')}
-          className={`absolute z-10 text-center cursor-move group p-4 border border-transparent hover:border-blue-200 hover:border-dashed rounded-xl transition-colors ${dragging === 'company' ? 'opacity-50' : ''}`}
-          style={{ left: `${data.backCompanyX}%`, top: `${data.backCompanyY}%`, transform: 'translate(-50%, -50%)', minWidth: '300px' }}
-        >
-            <h2 className="font-bold mb-1 tracking-tight" style={{ fontSize: `${data.companyFontSize}px`, color: data.autoTextColor ? currentText : primary }}>{data.company}</h2>
-            <div className="h-0.5 w-10 bg-current mx-auto mb-3 opacity-20"></div>
-            <p className="font-bold tracking-widest uppercase opacity-40" style={{ fontSize: `${data.taglineFontSize}px` }}>{data.tagline}</p>
-        </div>
+        
+        {side === 'front' ? (
+          <>
+            <div 
+              onMouseDown={handleMouseDown('name')}
+              className={`absolute z-10 text-right cursor-move group p-2 border border-transparent hover:border-blue-200 hover:border-dashed rounded-none transition-colors ${dragging === 'name' ? 'opacity-50' : ''}`}
+              style={{ left: `${data.frontNameX}%`, top: `${data.frontNameY}%`, transform: 'translate(-50%, -50%)', minWidth: '200px' }}
+            >
+              <h1 className="font-bold mb-0.5 tracking-tight leading-none" style={{ fontSize: `${data.nameFontSize}px`, color: data.autoTextColor ? currentText : primary }}>{data.name}</h1>
+              <p className="font-medium opacity-50 leading-tight" style={{ fontSize: `${data.titleFontSize}px` }}>{data.title}</p>
+            </div>
+
+            <div 
+              onMouseDown={handleMouseDown('contact')}
+              className={`absolute z-10 text-right cursor-move group p-3 border border-transparent hover:border-blue-200 hover:border-dashed rounded-none transition-colors ${dragging === 'contact' ? 'opacity-50' : ''}`}
+              style={{ 
+                left: `${data.frontContactX}%`, top: `${data.frontContactY}%`, 
+                transform: 'translate(-50%, -50%)',
+                minWidth: '240px'
+              }}
+            >
+              <div className="flex flex-col gap-1.5 opacity-80">
+                {['phone', 'email', 'website', 'address'].map(field => {
+                   const val = (data as any)[field];
+                   if(!val) return null;
+                   return (
+                     <div key={field} className="flex items-center justify-end gap-2 font-bold tracking-wide" style={{ fontSize: `${data.contactFontSize}px` }}>
+                       <span>{val}</span>
+                       <FlatIcon id={(data.icons as any)[field]} size={data.contactFontSize + 2} />
+                     </div>
+                   );
+                })}
+                {data.extraFields.map((f) => (
+                  <div key={f.id} className="flex items-center justify-end gap-2 font-bold tracking-wide" style={{ fontSize: `${data.contactFontSize}px` }}>
+                    <span>{f.value}</span>
+                    <FlatIcon id={f.iconId} size={data.contactFontSize + 2} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        ) : (
+          <div 
+            onMouseDown={handleMouseDown('company')}
+            className={`absolute z-10 text-center cursor-move group p-4 border border-transparent hover:border-blue-200 hover:border-dashed rounded-none transition-colors ${dragging === 'company' ? 'opacity-50' : ''}`}
+            style={{ left: `${data.backCompanyX}%`, top: `${data.backCompanyY}%`, transform: 'translate(-50%, -50%)', minWidth: '300px' }}
+          >
+              <h2 className="font-bold mb-1 tracking-tight" style={{ fontSize: `${data.companyFontSize}px`, color: data.autoTextColor ? currentText : primary }}>{data.company}</h2>
+              <div className="h-0.5 w-10 bg-current mx-auto mb-3 opacity-20"></div>
+              <p className="font-bold tracking-widest uppercase opacity-40" style={{ fontSize: `${data.taglineFontSize}px` }}>{data.tagline}</p>
+          </div>
+        )}
     </div>
   );
 };
