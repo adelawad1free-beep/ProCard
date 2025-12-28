@@ -1,11 +1,12 @@
 
 export type CardSide = 'front' | 'back';
 
+// Fix: Added 'architect' to the CardLayout union to allow it in templates and match component usage
 export type CardLayout = 
   | 'minimal' | 'corporate' | 'luxury' | 'modern' | 'tech' 
   | 'glass' | 'prism' | 'royal' | 'brutalist' | 'origami' 
   | 'waves' | 'blueprint' | 'stellar' | 'mosaic' | 'neon' 
-  | 'abstract' | 'eco' | 'retro' | 'circuit' | 'duotone';
+  | 'abstract' | 'eco' | 'retro' | 'circuit' | 'duotone' | 'architect';
 
 export interface CardFont {
   id: string;

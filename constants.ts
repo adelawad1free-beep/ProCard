@@ -15,26 +15,14 @@ export const FLAT_ICONS: Record<string, string> = {
 };
 
 export const TEMPLATES: Template[] = [
-  { id: 'luxury', name: 'الماسة السوداء (Luxury)', description: 'فخامة ملكية باللون الداكن والذهبي' },
-  { id: 'corporate', name: 'إكزيكتيف (Corporate)', description: 'النمط الرسمي للشركات والمؤسسات' },
-  { id: 'glass', name: 'الزجاج العائم (Glass)', description: 'تصميم شفاف وعصري جداً' },
-  { id: 'prism', name: 'بريزم (Prism)', description: 'تدرجات لونية مندمجة وفنية' },
-  { id: 'modern', name: 'ستوديو (Modern)', description: 'بساطة ذكية تبرز هويتك' },
-  { id: 'tech', name: 'أفق التقنية (Tech)', description: 'نمط مستقبلي للمبرمجين والتقنيين' },
-  { id: 'brutalist', name: 'جريء (Brutalist)', description: 'تباين قوي وتصميم صلب ومميز' },
-  { id: 'origami', name: 'فولد (Origami)', description: 'أشكال هندسية متداخلة' },
-  { id: 'waves', name: 'الأمواج (Waves)', description: 'انسيابية وراحة بصرية' },
-  { id: 'blueprint', name: 'المخطط (Blueprint)', description: 'للمهندسين والمصممين المعماريين' },
-  { id: 'stellar', name: 'النجوم (Stellar)', description: 'تصميم كوني ملهم' },
-  { id: 'mosaic', name: 'موزاييك (Mosaic)', description: 'نمط المربعات الرقمية' },
-  { id: 'neon', name: 'نيون (Neon)', description: 'ألوان مضيئة وجذابة' },
-  { id: 'abstract', name: 'تجريدي (Abstract)', description: 'أشكال عضوية وفن حديث' },
-  { id: 'eco', name: 'الواحة (Eco)', description: 'نمط صديق للبيئة وطبيعي' },
-  { id: 'retro', name: 'ريترو (Retro)', description: 'حنين للماضي بلمسة عصرية' },
-  { id: 'circuit', name: 'الدوائر (Circuit)', description: 'نمط اللوحات الإلكترونية' },
-  { id: 'duotone', name: 'ثنائي اللون (Duotone)', description: 'بساطة وقوة في تباين اللونين' },
-  { id: 'minimal', name: 'الأساسي (Minimal)', description: 'أقل قدر من التفاصيل لأقصى أثر' },
-  { id: 'royal', name: 'التاج (Royal)', description: 'زخارف كلاسيكية فخمة' }
+  { id: 'corporate', name: 'المدير التنفيذي (Executive)', description: 'تصميم رسمي جداً بلمسات احترافية' },
+  { id: 'luxury', name: 'برستيج بلاتينيوم (Prestige)', description: 'فخامة ملكية هادئة وبسيطة' },
+  { id: 'modern', name: 'عصري كلاسيك (Modern Classic)', description: 'توازن بين الحداثة والرسمية' },
+  { id: 'glass', name: 'الشفافية العالية (Clear Glass)', description: 'نمط عصري جداً وشفاف' },
+  { id: 'minimal', name: 'النقاء المطلق (Pure Minimal)', description: 'أقل قدر من العناصر لأقصى انطباع' },
+  { id: 'tech', name: 'دقة التقنية (Tech Precision)', description: 'نمط شبكي خفيف ومنظم' },
+  { id: 'architect', name: 'هيكلة الأعمال (Architect)', description: 'استخدام الخطوط الهيكلية الرفيعة' },
+  { id: 'stellar', name: 'النخبة (Elite)', description: 'تدرج احترافي خافت جداً' }
 ];
 
 export const ARABIC_FONTS: CardFont[] = [
@@ -58,7 +46,7 @@ export const INITIAL_CARD_DATA_AR = {
   frontBackgroundColor: '#ffffff',
   backBackgroundColor: '#0f172a',
   textColor: '#1e293b',
-  layout: 'luxury' as const,
+  layout: 'corporate' as const,
   fontFamily: "'Tajawal', sans-serif",
   logoText: 'VISION',
   tagline: 'نصنع المستقبل بإتقان',
@@ -110,7 +98,7 @@ export const INITIAL_CARD_DATA_EN = {
   frontBackgroundColor: '#ffffff',
   backBackgroundColor: '#0f172a',
   textColor: '#1e293b',
-  layout: 'luxury' as const,
+  layout: 'corporate' as const,
   fontFamily: "sans-serif",
   logoText: 'VISION',
   tagline: 'Crafting the future with excellence',
