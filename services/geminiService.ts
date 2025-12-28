@@ -1,10 +1,9 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 
-const API_KEY = process.env.API_KEY || "";
-
 export const generateProfessionalContent = async (jobTitle: string, company: string) => {
-  const ai = new GoogleGenAI({ apiKey: API_KEY });
+  // Always use the process.env.API_KEY directly in the constructor
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   try {
     const response = await ai.models.generateContent({
@@ -24,7 +23,9 @@ export const generateProfessionalContent = async (jobTitle: string, company: str
       }
     });
 
-    return JSON.parse(response.text).suggestions;
+    // Access text property directly from GenerateContentResponse
+    const responseText = response.text || "{}";
+    return JSON.parse(responseText).suggestions;
   } catch (error) {
     console.error("Gemini Error:", error);
     return ["التميز في الأداء", "حلول ذكية لأعمالك", "شريكك نحو النجاح"];

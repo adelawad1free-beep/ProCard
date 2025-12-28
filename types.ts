@@ -2,11 +2,10 @@
 export type CardSide = 'front' | 'back';
 
 export type CardLayout = 
-  | 'minimal' | 'corporate' | 'creative' | 'luxury' 
-  | 'modern' | 'tech' | 'eco' | 'royal' | 'gradient' 
-  | 'glass' | 'neon' | 'grid' | 'retro' | 'flat'
-  | 'abstract' | 'brutalist' | 'origami' | 'circuit' | 'waves'
-  | 'blueprint' | 'duotone' | 'stellar' | 'mosaic' | 'minimal-dark';
+  | 'minimal' | 'corporate' | 'luxury' | 'modern' | 'tech' 
+  | 'glass' | 'prism' | 'royal' | 'brutalist' | 'origami' 
+  | 'waves' | 'blueprint' | 'stellar' | 'mosaic' | 'neon' 
+  | 'abstract' | 'eco' | 'retro' | 'circuit' | 'duotone';
 
 export interface CardFont {
   id: string;
@@ -40,21 +39,32 @@ export interface CardData {
   tagline: string;
   autoTextColor: boolean;
   logoUrl: string | null;
-  // إعدادات الوجه الأمامي
+  // Logo Positions
   frontLogoScale: number;
   frontLogoX: number;
   frontLogoY: number;
   frontLogoVisible: boolean;
   frontLogoWhite: boolean; 
-  // إعدادات الوجه الخلفي
   backLogoScale: number;
   backLogoX: number;
   backLogoY: number;
   backLogoVisible: boolean;
   backLogoWhite: boolean; 
-  // معالجة الشعار
   logoBgRemoved: boolean;
-  // الأيقونات والحقول الإضافية
+  // Text Positions
+  frontNameX: number;
+  frontNameY: number;
+  frontContactX: number;
+  frontContactY: number;
+  backCompanyX: number;
+  backCompanyY: number;
+  // Font Sizes (New)
+  nameFontSize: number;
+  titleFontSize: number;
+  contactFontSize: number;
+  companyFontSize: number;
+  taglineFontSize: number;
+  
   icons: {
     phone: string;
     email: string;

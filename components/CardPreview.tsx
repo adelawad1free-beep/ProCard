@@ -1,14 +1,18 @@
-import React, { useState, useEffect, useMemo } from 'react';
+
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { CardData, CardSide } from '../types';
 import { FLAT_ICONS } from '../constants';
 
 interface CardPreviewProps {
   data: CardData;
+  setData?: (data: CardData) => void;
   side: CardSide;
 }
 
-const CardPreview: React.FC<CardPreviewProps> = ({ data, side }) => {
+const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
   const [processedLogo, setProcessedLogo] = useState<string | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [dragging, setDragging] = useState<string | null>(null);
 
   const getContrastColor = (hex: string) => {
     if (!hex) return '#ffffff';
@@ -16,7 +20,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, side }) => {
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
     const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-    return yiq >= 128 ? '#1e293b' : '#ffffff';
+    return yiq >= 128 ? '#0f172a' : '#ffffff';
   };
 
   const logoVisible = side === 'front' ? data.frontLogoVisible : data.backLogoVisible;
@@ -56,202 +60,197 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, side }) => {
   const primary = data.primaryColor || '#3b82f6';
   const secondary = data.secondaryColor || '#10b981';
 
+  // Drag and Drop Logic
+  const handleMouseDown = (element: string) => (e: React.MouseEvent) => {
+    if (!setData) return;
+    e.preventDefault();
+    setDragging(element);
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!dragging || !cardRef.current || !setData) return;
+
+      const rect = cardRef.current.getBoundingClientRect();
+      let x = ((e.clientX - rect.left) / rect.width) * 100;
+      let y = ((e.clientY - rect.top) / rect.height) * 100;
+
+      // Constrain within 0-100
+      x = Math.max(0, Math.min(100, x));
+      y = Math.max(0, Math.min(100, y));
+
+      const update: Partial<CardData> = {};
+      if (dragging === 'logo') {
+        if (side === 'front') { update.frontLogoX = x; update.frontLogoY = y; }
+        else { update.backLogoX = x; update.backLogoY = y; }
+      } else if (dragging === 'name') {
+        update.frontNameX = x; update.frontNameY = y;
+      } else if (dragging === 'contact') {
+        update.frontContactX = x; update.frontContactY = y;
+      } else if (dragging === 'company') {
+        update.backCompanyX = x; update.backCompanyY = y;
+      }
+
+      setData({ ...data, ...update });
+    };
+
+    const handleMouseUp = () => setDragging(null);
+
+    if (dragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [dragging, side, data, setData]);
+
   const Decoration = useMemo(() => {
     const safeId = (id: string) => `${side}-${id}`;
     
     switch (data.layout) {
+      case 'luxury':
+        return (
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <div className="absolute top-0 right-0 w-1/2 h-full bg-slate-900/5 -skew-x-12 translate-x-1/4"></div>
+            <div className="absolute inset-8 border border-current opacity-10"></div>
+            <div className="absolute top-0 left-0 w-24 h-24 border-t-4 border-l-4" style={{ borderColor: primary, opacity: 0.3 }}></div>
+            <div className="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4" style={{ borderColor: secondary, opacity: 0.3 }}></div>
+          </div>
+        );
       case 'corporate':
         return (
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div className="absolute top-0 right-0 w-1/3 h-full opacity-10" style={{ backgroundColor: primary }}></div>
-            <div className="absolute top-0 right-0 w-2 h-full" style={{ backgroundColor: primary }}></div>
-            <div className="absolute bottom-10 right-0 w-1/4 h-1.5" style={{ backgroundColor: secondary }}></div>
+            <div className="absolute top-0 right-0 w-2 h-full shadow-2xl" style={{ backgroundColor: primary }}></div>
+            <div className="absolute top-0 right-2 w-1.5 h-full opacity-50" style={{ backgroundColor: secondary }}></div>
+            <div className="absolute bottom-0 left-0 w-full h-12 opacity-[0.05]" style={{ backgroundImage: `repeating-linear-gradient(45deg, ${primary}, ${primary} 5px, transparent 5px, transparent 15px)` }}></div>
           </div>
         );
-      case 'luxury':
+      case 'glass':
         return (
-          <div className="absolute inset-0 pointer-events-none border-[12px]" style={{ borderColor: `${primary}20` }}>
-            <div className="absolute inset-4 border border-current opacity-20"></div>
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-1" style={{ backgroundColor: primary }}></div>
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-24 h-1" style={{ backgroundColor: primary }}></div>
+          <div className="absolute inset-0 pointer-events-none p-10 flex items-center justify-center">
+            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full opacity-30 blur-3xl" style={{ backgroundColor: primary }}></div>
+            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full opacity-30 blur-3xl" style={{ backgroundColor: secondary }}></div>
+            <div className="w-full h-full backdrop-blur-xl bg-white/10 border border-white/20 rounded-[40px] shadow-2xl"></div>
           </div>
         );
-      case 'creative':
+      case 'prism':
         return (
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full opacity-20 blur-3xl" style={{ backgroundColor: primary }}></div>
-            <div className="absolute -bottom-32 -right-32 w-[500px] h-[500px] rounded-full opacity-15 blur-[80px]" style={{ backgroundColor: secondary }}></div>
-            <div className="absolute top-1/4 right-0 w-3 h-1/2 rounded-l-2xl" style={{ backgroundColor: primary }}></div>
+            <div className="absolute inset-0 opacity-20" style={{ background: `radial-gradient(circle at 50% 50%, ${primary}, ${secondary}, transparent)` }}></div>
+            <div className="absolute top-0 left-0 w-full h-full" style={{ backgroundImage: `radial-gradient(circle at 2px 2px, ${primary}15 1px, transparent 0)`, backgroundSize: '30px 30px' }}></div>
           </div>
         );
       case 'tech':
         return (
-          <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ 
-            backgroundImage: `radial-gradient(${primary} 1.5px, transparent 1.5px)`, 
-            backgroundSize: '20px 20px' 
-          }}>
-            <div className="absolute inset-0" style={{ backgroundImage: `linear-gradient(${primary}10 1px, transparent 1px), linear-gradient(90deg, ${primary}10 1px, transparent 1px)`, backgroundSize: '80px 80px' }}></div>
-          </div>
-        );
-      case 'modern':
-        return (
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-full skew-x-[-25deg] origin-top-right opacity-5 translate-x-1/3" style={{ backgroundColor: primary }}></div>
-            <div className="absolute bottom-0 right-0 w-1/2 h-2" style={{ backgroundColor: primary }}></div>
-          </div>
-        );
-      case 'eco':
-        return (
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full opacity-15" style={{ backgroundColor: primary }}></div>
-            <div className="absolute top-12 right-12 opacity-10">
-              <svg width="120" height="120" viewBox="0 0 100 100" fill={primary}><path d="M50 0C50 0 50 40 10 50C50 60 50 100 50 100C50 100 50 60 90 50C50 40 50 0 50 0Z"/></svg>
-            </div>
-          </div>
-        );
-      case 'royal':
-        return (
-          <div className="absolute inset-0 pointer-events-none p-5">
-            <div className="w-full h-full border-4 border-double opacity-25" style={{ borderColor: primary }}></div>
-            <div className="absolute top-2 left-1/2 -translate-x-1/2 px-6 bg-inherit text-[10px] font-black tracking-[0.4em]" style={{ color: primary }}>PREMIUM</div>
-          </div>
-        );
-      case 'gradient':
-        return <div className="absolute inset-0 opacity-30 pointer-events-none" style={{ background: `linear-gradient(135deg, ${primary} 0%, ${secondary} 100%)` }}></div>;
-      case 'glass':
-        return (
-          <div className="absolute inset-0 pointer-events-none flex items-center justify-center p-10">
-            <div className="w-full h-full backdrop-blur-xl bg-white/10 rounded-[40px] border border-white/20 shadow-2xl"></div>
-          </div>
-        );
-      case 'neon':
-        return (
-          <div className="absolute inset-0 pointer-events-none border-4 opacity-50 shadow-[inset_0_0_30px_rgba(255,255,255,0.1)]" style={{ borderColor: primary }}>
-            <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-white/5 to-transparent"></div>
-          </div>
-        );
-      case 'grid':
-        return (
-          <div className="absolute inset-0 pointer-events-none opacity-10" style={{ 
-            backgroundImage: `linear-gradient(${primary} 1.5px, transparent 1.5px), linear-gradient(90deg, ${primary} 1.5px, transparent 1.5px)`, 
-            backgroundSize: '40px 40px' 
-          }}></div>
-        );
-      case 'retro':
-        return (
-          <div className="absolute inset-0 pointer-events-none overflow-hidden flex flex-col">
-            {[primary, secondary, primary].map((c, i) => (
-              <div key={i} className="h-4 w-full opacity-15 mb-2" style={{ backgroundColor: c }}></div>
-            ))}
-          </div>
-        );
-      case 'flat':
-        return (
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute bottom-0 right-0 w-56 h-56 rotate-[30deg] translate-x-24 translate-y-24 rounded-3xl" style={{ backgroundColor: `${primary}15` }}></div>
-            <div className="absolute top-10 left-10 w-16 h-16 rounded-full" style={{ backgroundColor: `${secondary}10` }}></div>
-          </div>
-        );
-      case 'abstract':
-        return (
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full opacity-10 rotate-12" style={{ backgroundColor: primary }}></div>
-            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[20%] rounded-full opacity-10 -rotate-12" style={{ backgroundColor: secondary }}></div>
+          <div className="absolute inset-0 pointer-events-none opacity-10">
+            <svg width="100%" height="100%"><pattern id={safeId("tech-grid")} width="50" height="50" patternUnits="userSpaceOnUse"><path d="M 50 0 L 0 0 0 50" fill="none" stroke={primary} strokeWidth="1"/><circle cx="0" cy="0" r="2" fill={secondary}/></pattern><rect width="100%" height="100%" fill={`url(#${safeId("tech-grid")})`}/></svg>
+            <div className="absolute bottom-4 left-4 font-mono text-[8px] opacity-40">SYSTEM_ACTIVE // {new Date().getFullYear()}</div>
           </div>
         );
       case 'brutalist':
         return (
-          <div className="absolute inset-0 pointer-events-none border-[12px] border-black">
-            <div className="absolute top-20 left-0 w-full h-[3px] bg-black opacity-10"></div>
-            <div className="absolute top-0 left-20 w-[3px] h-full bg-black opacity-10"></div>
+          <div className="absolute inset-0 pointer-events-none border-[20px] border-current opacity-5">
+            <div className="absolute top-1/4 left-0 w-full h-1.5 bg-current opacity-10"></div>
+            <div className="absolute top-0 right-1/4 w-1.5 h-full bg-current opacity-10"></div>
           </div>
         );
       case 'origami':
         return (
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-0 left-0 w-full h-full" style={{ 
-              clipPath: 'polygon(0 0, 100% 0, 50% 100%)', 
-              backgroundColor: primary, opacity: 0.05 
-            }}></div>
-          </div>
-        );
-      case 'circuit':
-        return (
-          <div className="absolute inset-0 pointer-events-none opacity-15">
-            <svg width="100%" height="100%">
-              <defs>
-                <pattern id={safeId("circuit")} x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
-                  <path d="M0 50h50v50M50 0v50M25 25h50v50" fill="none" stroke={primary} strokeWidth="1.5"/>
-                  <circle cx="50" cy="50" r="4" fill={primary} opacity="0.5"/>
-                </pattern>
-              </defs>
-              <rect width="100%" height="100%" fill={`url(#${safeId("circuit")})`}/>
-            </svg>
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-full opacity-5" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 70%)', backgroundColor: primary }}></div>
+            <div className="absolute bottom-0 right-0 w-full h-2/3 opacity-5" style={{ clipPath: 'polygon(100% 0, 100% 100%, 20% 100%)', backgroundColor: secondary }}></div>
           </div>
         );
       case 'waves':
         return (
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div className="absolute bottom-0 left-0 w-[120%] h-40 opacity-10" style={{ 
-              borderRadius: '100% 100% 0 0', backgroundColor: primary, transform: 'scaleX(1.4) translateY(20%)'
-            }}></div>
-            <div className="absolute bottom-4 left-0 w-[120%] h-32 opacity-15" style={{ 
-              borderRadius: '100% 100% 0 0', backgroundColor: secondary, transform: 'scaleX(1.6) translateY(20%)'
-            }}></div>
+            <div className="absolute bottom-0 left-0 w-[150%] h-48 opacity-10 -translate-x-1/4 translate-y-1/4" style={{ borderRadius: '100% 100% 0 0', backgroundColor: primary }}></div>
+            <div className="absolute bottom-0 left-0 w-[150%] h-36 opacity-10 -translate-x-1/4 translate-y-1/4 rotate-3" style={{ borderRadius: '100% 100% 0 0', backgroundColor: secondary }}></div>
           </div>
         );
       case 'blueprint':
         return (
-          <div className="absolute inset-0 pointer-events-none" style={{ backgroundColor: '#002b5c' }}>
-            <div className="absolute inset-0 opacity-20" style={{ 
-              backgroundImage: `linear-gradient(white 1px, transparent 1px), linear-gradient(90deg, white 1px, transparent 1px)`, 
-              backgroundSize: '25px 25px' 
-            }}></div>
-            <div className="absolute bottom-4 right-4 text-[9px] text-white/40 font-mono border border-white/20 p-2">DRAWING_V25.A</div>
-          </div>
-        );
-      case 'duotone':
-        return (
-          <div className="absolute inset-0 pointer-events-none flex">
-            <div className="w-1/2 h-full opacity-10" style={{ backgroundColor: primary }}></div>
-            <div className="w-1/2 h-full opacity-10" style={{ backgroundColor: secondary }}></div>
+          <div className="absolute inset-0 pointer-events-none bg-[#003366] opacity-10">
+            <div className="absolute inset-0" style={{ backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`, backgroundSize: '20px 20px' }}></div>
+            <div className="absolute bottom-4 right-4 border border-white/20 p-2 text-[8px] text-white/40 font-mono">LAYOUT_V2.0</div>
           </div>
         );
       case 'stellar':
         return (
           <div className="absolute inset-0 pointer-events-none bg-slate-950 overflow-hidden">
-            {[...Array(50)].map((_, i) => (
-              <div key={i} className="absolute bg-white rounded-full opacity-40" style={{ 
-                width: Math.random() * 2 + 1, height: Math.random() * 2 + 1,
-                top: `${Math.random() * 100}%`, left: `${Math.random() * 100}%`,
-              }}></div>
+            {[...Array(30)].map((_, i) => (
+              <div key={i} className="absolute rounded-full bg-white opacity-40 blur-[0.5px]" style={{ width: Math.random() * 3, height: Math.random() * 3, top: `${Math.random() * 100}%`, left: `${Math.random() * 100}%` }}></div>
             ))}
+            <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full opacity-10 blur-3xl" style={{ backgroundColor: primary }}></div>
           </div>
         );
       case 'mosaic':
         return (
-          <div className="absolute inset-0 pointer-events-none opacity-10 grid grid-cols-12 grid-rows-8">
+          <div className="absolute inset-0 pointer-events-none opacity-5 grid grid-cols-12 grid-rows-8">
             {[...Array(96)].map((_, i) => (
-              <div key={i} className="border-[0.2px]" style={{ 
-                borderColor: primary, 
-                backgroundColor: i % 11 === 0 ? primary : (i % 7 === 0 ? secondary : 'transparent') 
-              }}></div>
+              <div key={i} className="border-[0.1px] border-current" style={{ backgroundColor: i % 7 === 0 ? primary : 'transparent' }}></div>
             ))}
           </div>
         );
-      case 'minimal-dark':
+      case 'neon':
         return (
-          <div className="absolute inset-0 pointer-events-none bg-slate-900">
-            <div className="absolute top-1/2 left-0 w-full h-[0.5px] bg-white/5"></div>
-            <div className="absolute top-0 right-24 w-[0.5px] h-full bg-white/5"></div>
+          <div className="absolute inset-0 pointer-events-none border-[3px] opacity-40 shadow-[0_0_20px_rgba(255,255,255,0.1)]" style={{ borderColor: primary }}>
+            <div className="absolute top-0 left-0 w-full h-full animate-pulse opacity-20" style={{ boxShadow: `inset 0 0 50px ${primary}` }}></div>
           </div>
         );
+      case 'abstract':
+        return (
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-[40%_60%_70%_30%] opacity-10 blur-2xl" style={{ backgroundColor: primary }}></div>
+            <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] rounded-[70%_30%_40%_60%] opacity-10 blur-2xl" style={{ backgroundColor: secondary }}></div>
+          </div>
+        );
+      case 'eco':
+        return (
+          <div className="absolute inset-0 pointer-events-none overflow-hidden bg-emerald-50/10">
+            <div className="absolute top-10 right-10 opacity-5">
+              <svg width="150" height="150" viewBox="0 0 24 24" fill={primary}><path d="M17,8C8,10 5.9,16.17 3.82,21.34L5.71,22L6.66,19.7C7.14,19.87 7.64,20 8,20C19,20 22,3 22,3C21,5 14,5.25 9,6.25C4,7.25 2,11.5 2,13.5C2,15.5 3.75,17.25 3.75,17.25C7,11 17,8 17,8Z"/></svg>
+            </div>
+            <div className="absolute bottom-0 left-0 w-full h-1 bg-emerald-600/20"></div>
+          </div>
+        );
+      case 'retro':
+        return (
+          <div className="absolute inset-0 pointer-events-none overflow-hidden flex flex-col gap-1">
+            <div className="h-6 w-full opacity-10" style={{ backgroundColor: '#ff0080' }}></div>
+            <div className="h-6 w-full opacity-10" style={{ backgroundColor: '#00ffff' }}></div>
+            <div className="h-6 w-full opacity-10" style={{ backgroundColor: '#ffff00' }}></div>
+          </div>
+        );
+      case 'circuit':
+        return (
+          <div className="absolute inset-0 pointer-events-none opacity-10">
+             <svg width="100%" height="100%"><pattern id={safeId("circuit-bg")} x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M0 50 L50 50 L50 100 M50 0 L50 50 L100 50" fill="none" stroke={primary} strokeWidth="2"/><circle cx="50" cy="50" r="4" fill={primary}/></pattern><rect width="100%" height="100%" fill={`url(#${safeId("circuit-bg")})`}/></svg>
+          </div>
+        );
+      case 'duotone':
+        return (
+          <div className="absolute inset-0 pointer-events-none flex">
+            <div className="flex-1 opacity-5" style={{ backgroundColor: primary }}></div>
+            <div className="flex-1 opacity-5" style={{ backgroundColor: secondary }}></div>
+          </div>
+        );
+      case 'royal':
+        return (
+          <div className="absolute inset-0 pointer-events-none border-[15px] border-double opacity-20" style={{ borderColor: primary }}>
+            <div className="absolute top-4 left-4 w-8 h-8 border-t-2 border-l-2" style={{ borderColor: primary }}></div>
+            <div className="absolute bottom-4 right-4 w-8 h-8 border-b-2 border-r-2" style={{ borderColor: primary }}></div>
+          </div>
+        );
+      case 'modern':
       case 'minimal':
       default:
         return (
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-8 left-8 w-10 h-10 border-t-2 border-l-2 opacity-15" style={{ borderColor: primary }}></div>
-            <div className="absolute bottom-8 right-8 w-10 h-10 border-b-2 border-r-2 opacity-15" style={{ borderColor: primary }}></div>
+          <div className="absolute inset-0 pointer-events-none opacity-5">
+            <div className="absolute top-1/2 left-10 right-10 h-px bg-current"></div>
+            <div className="absolute top-10 bottom-10 left-1/2 w-px bg-current"></div>
           </div>
         );
     }
@@ -261,7 +260,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, side }) => {
     backgroundColor: currentBg,
     color: currentText,
     fontFamily: data.fontFamily,
-    transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)'
+    transition: dragging ? 'none' : 'background-color 0.4s ease, color 0.4s ease'
   };
 
   const FlatIcon = ({ id, size = 12 }: { id: string, size?: number }) => {
@@ -277,13 +276,14 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, side }) => {
     if (!logoVisible || !processedLogo) return null;
     return (
       <img 
+        onMouseDown={handleMouseDown('logo')}
         src={processedLogo} 
         alt="Logo" 
-        className="absolute z-20 pointer-events-none transition-all duration-700 ease-out"
+        className={`absolute z-20 cursor-move transition-shadow hover:ring-2 hover:ring-blue-400 hover:ring-offset-4 rounded-lg ${dragging === 'logo' ? 'opacity-50 grayscale' : ''}`}
         style={{ 
           left: `${logoX}%`, top: `${logoY}%`,
           transform: `translate(-50%, -50%) scale(${logoScale})`,
-          maxWidth: '400px', maxHeight: '400px', objectFit: 'contain'
+          maxWidth: '450px', maxHeight: '450px', objectFit: 'contain'
         }} 
       />
     );
@@ -291,42 +291,62 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, side }) => {
 
   if (side === 'front') {
     return (
-      <div className="relative w-[500px] h-[300px] overflow-hidden rounded-3xl flex flex-col justify-center p-14 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.2)] bg-white" style={commonStyles}>
+      <div 
+        ref={cardRef}
+        className="relative w-[500px] h-[300px] overflow-hidden rounded-3xl flex flex-col p-14 shadow-2xl bg-white select-none" 
+        style={commonStyles}
+      >
         {Decoration}
         <LogoComponent />
-        <div className="z-10 text-right relative space-y-1.5">
-          <h1 className="text-4xl font-black leading-none mb-1 tracking-tight" style={{ color: data.autoTextColor ? currentText : primary }}>{data.name}</h1>
-          <p className="text-lg font-bold opacity-75 mb-4">{data.title}</p>
-          
-          <div className="pt-4 border-t flex flex-col gap-2.5 opacity-90" style={{ borderColor: `${currentText}15` }}>
+        
+        <div 
+          onMouseDown={handleMouseDown('name')}
+          className={`absolute z-10 text-right cursor-move group p-2 border border-transparent hover:border-blue-300 hover:border-dashed rounded-xl transition-colors ${dragging === 'name' ? 'opacity-50' : ''}`}
+          style={{ left: `${data.frontNameX}%`, top: `${data.frontNameY}%`, transform: 'translate(-50%, -50%)', minWidth: '200px' }}
+        >
+          <h1 className="font-black mb-1 tracking-tight leading-tight" style={{ fontSize: `${data.nameFontSize}px`, color: data.autoTextColor ? currentText : primary }}>{data.name}</h1>
+          <p className="font-bold opacity-60 leading-tight" style={{ fontSize: `${data.titleFontSize}px` }}>{data.title}</p>
+        </div>
+
+        <div 
+          onMouseDown={handleMouseDown('contact')}
+          className={`absolute z-10 text-right cursor-move group p-3 border border-transparent hover:border-blue-300 hover:border-dashed rounded-xl transition-colors ${dragging === 'contact' ? 'opacity-50' : ''}`}
+          style={{ 
+            left: `${data.frontContactX}%`, top: `${data.frontContactY}%`, 
+            transform: 'translate(-50%, -50%)',
+            borderColor: `${currentText}15`,
+            minWidth: '240px'
+          }}
+        >
+          <div className="flex flex-col gap-2 opacity-90">
             {data.phone && (
-              <div className="flex items-center justify-end gap-3.5 text-[10px] font-black uppercase tracking-wider">
+              <div className="flex items-center justify-end gap-3 font-bold uppercase tracking-widest" style={{ fontSize: `${data.contactFontSize}px` }}>
                 <span>{data.phone}</span>
-                <div className="p-1.5 rounded-lg bg-current/5 shadow-sm"><FlatIcon id={data.icons.phone} size={12} /></div>
+                <div className="p-1 rounded bg-current/5"><FlatIcon id={data.icons.phone} size={data.contactFontSize + 1} /></div>
               </div>
             )}
             {data.email && (
-              <div className="flex items-center justify-end gap-3.5 text-[10px] font-black uppercase tracking-wider">
+              <div className="flex items-center justify-end gap-3 font-bold uppercase tracking-widest" style={{ fontSize: `${data.contactFontSize}px` }}>
                 <span>{data.email}</span>
-                <div className="p-1.5 rounded-lg bg-current/5 shadow-sm"><FlatIcon id={data.icons.email} size={12} /></div>
+                <div className="p-1 rounded bg-current/5"><FlatIcon id={data.icons.email} size={data.contactFontSize + 1} /></div>
               </div>
             )}
             {data.website && (
-              <div className="flex items-center justify-end gap-3.5 text-[10px] font-black uppercase tracking-wider">
+              <div className="flex items-center justify-end gap-3 font-bold uppercase tracking-widest" style={{ fontSize: `${data.contactFontSize}px` }}>
                 <span>{data.website}</span>
-                <div className="p-1.5 rounded-lg bg-current/5 shadow-sm"><FlatIcon id={data.icons.website} size={12} /></div>
+                <div className="p-1 rounded bg-current/5"><FlatIcon id={data.icons.website} size={data.contactFontSize + 1} /></div>
               </div>
             )}
             {data.address && (
-              <div className="flex items-center justify-end gap-3.5 text-[10px] font-black uppercase tracking-wider">
+              <div className="flex items-center justify-end gap-3 font-bold uppercase tracking-widest" style={{ fontSize: `${data.contactFontSize}px` }}>
                 <span>{data.address}</span>
-                <div className="p-1.5 rounded-lg bg-current/5 shadow-sm"><FlatIcon id={data.icons.address} size={12} /></div>
+                <div className="p-1 rounded bg-current/5"><FlatIcon id={data.icons.address} size={data.contactFontSize + 1} /></div>
               </div>
             )}
             {data.extraFields.map((f) => (
-              <div key={f.id} className="flex items-center justify-end gap-3.5 text-[10px] font-black uppercase tracking-wider">
+              <div key={f.id} className="flex items-center justify-end gap-3 font-bold uppercase tracking-widest" style={{ fontSize: `${data.contactFontSize}px` }}>
                 <span>{f.value}</span>
-                <div className="p-1.5 rounded-lg bg-current/5 shadow-sm"><FlatIcon id={f.iconId} size={12} /></div>
+                <div className="p-1 rounded bg-current/5"><FlatIcon id={f.iconId} size={data.contactFontSize + 1} /></div>
               </div>
             ))}
           </div>
@@ -336,13 +356,21 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, side }) => {
   }
 
   return (
-    <div className="relative w-[500px] h-[300px] overflow-hidden rounded-3xl flex flex-col items-center justify-center p-12 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.2)] bg-white" style={commonStyles}>
+    <div 
+      ref={cardRef}
+      className="relative w-[500px] h-[300px] overflow-hidden rounded-3xl flex flex-col items-center justify-center p-12 shadow-2xl bg-white select-none" 
+      style={commonStyles}
+    >
         {Decoration}
         <LogoComponent />
-        <div className="mt-auto z-10 text-center relative group">
-            <h2 className="text-3xl font-black mb-1 drop-shadow-sm tracking-tight" style={{ color: data.autoTextColor ? currentText : primary }}>{data.company}</h2>
-            <div className="h-1.5 w-16 bg-current mx-auto mb-4 rounded-full opacity-30 shadow-inner"></div>
-            <p className="text-[12px] font-black tracking-[0.4em] uppercase opacity-60 mb-4">{data.tagline}</p>
+        <div 
+          onMouseDown={handleMouseDown('company')}
+          className={`absolute z-10 text-center cursor-move group p-4 border border-transparent hover:border-blue-300 hover:border-dashed rounded-2xl transition-colors ${dragging === 'company' ? 'opacity-50' : ''}`}
+          style={{ left: `${data.backCompanyX}%`, top: `${data.backCompanyY}%`, transform: 'translate(-50%, -50%)', minWidth: '300px' }}
+        >
+            <h2 className="font-black mb-1 tracking-tighter" style={{ fontSize: `${data.companyFontSize}px`, color: data.autoTextColor ? currentText : primary }}>{data.company}</h2>
+            <div className="h-1 w-12 bg-current mx-auto mb-4 rounded-full opacity-20"></div>
+            <p className="font-black tracking-[0.3em] uppercase opacity-50" style={{ fontSize: `${data.taglineFontSize}px` }}>{data.tagline}</p>
         </div>
     </div>
   );

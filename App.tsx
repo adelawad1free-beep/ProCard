@@ -18,9 +18,6 @@ const App: React.FC = () => {
 
   const toggleLanguage = () => {
     const nextLang = lang === 'ar' ? 'en' : 'ar';
-    
-    // منطق تبديل المحتوى تلقائياً إذا لم يقم المستخدم بتعديله جذرياً
-    // نقارن القيم الحالية بالقيم الأولية للغة الحالية
     const isDefault = (
       cardData.name === (lang === 'ar' ? INITIAL_CARD_DATA_AR.name : INITIAL_CARD_DATA_EN.name) &&
       cardData.title === (lang === 'ar' ? INITIAL_CARD_DATA_AR.title : INITIAL_CARD_DATA_EN.title) &&
@@ -30,7 +27,6 @@ const App: React.FC = () => {
     if (isDefault) {
       setCardData(nextLang === 'ar' ? INITIAL_CARD_DATA_AR : INITIAL_CARD_DATA_EN);
     }
-
     setLang(nextLang);
   };
 
@@ -44,7 +40,7 @@ const App: React.FC = () => {
              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-blue-200">C</div>
              <div>
                 <h1 className="text-lg font-black text-slate-900 leading-none">{t.appName}</h1>
-                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{lang === 'ar' ? 'تصميم هوية' : 'Branding Hub'}</p>
+                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{lang === 'ar' ? 'مصمم تفاعلي' : 'Interactive Designer'}</p>
              </div>
           </div>
           
@@ -56,7 +52,7 @@ const App: React.FC = () => {
               {t.langToggle}
             </button>
             <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-slate-200 shadow-sm">
-               <span className="w-2 h-2 bg-green-500 rounded-full animate-ping"></span>
+               <span className="w-2 h-2 bg-blue-500 rounded-full animate-ping"></span>
                <span className="text-xs font-black text-slate-700">{t.previewHighRes}</span>
             </div>
           </div>
@@ -71,8 +67,8 @@ const App: React.FC = () => {
                   <div className="w-px h-3 bg-white/20"></div>
                   <span className="text-sm font-bold">{t.frontSide}</span>
                 </div>
-                <div id="card-front" className="transform transition-all duration-700 hover:scale-[1.02]">
-                  <CardPreview data={cardData} side="front" />
+                <div id="card-front" className="transform transition-all duration-300">
+                  <CardPreview data={cardData} setData={setCardData} side="front" />
                 </div>
               </div>
 
@@ -82,8 +78,8 @@ const App: React.FC = () => {
                   <div className="w-px h-3 bg-white/20"></div>
                   <span className="text-sm font-bold">{t.backSide}</span>
                 </div>
-                <div id="card-back" className="transform transition-all duration-700 hover:scale-[1.02]">
-                  <CardPreview data={cardData} side="back" />
+                <div id="card-back" className="transform transition-all duration-300">
+                  <CardPreview data={cardData} setData={setCardData} side="back" />
                 </div>
               </div>
             </div>

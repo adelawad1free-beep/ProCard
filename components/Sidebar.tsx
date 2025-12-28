@@ -191,6 +191,16 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
     </div>
   );
 
+  const FontSizeControl = ({ name, label, value }: { name: string, label: string, value: number }) => (
+    <div className="mt-2 px-1">
+      <div className="flex justify-between mb-1">
+        <span className="text-[10px] font-black text-slate-400">{label}</span>
+        <span className="text-[10px] font-black text-blue-600">{value}px</span>
+      </div>
+      <input type="range" name={name} min="6" max="100" value={value} onChange={handleChange} className={sliderClass} />
+    </div>
+  );
+
   return (
     <div className={`w-full lg:w-[480px] bg-white ${lang === 'ar' ? 'border-l' : 'border-r'} border-slate-200 h-full overflow-y-auto p-6 scrollbar-hide shadow-2xl z-30 flex flex-col no-print`}>
       <div className="mb-6 sticky top-0 bg-white z-20 pb-4 border-b border-slate-100 flex justify-between items-center">
@@ -201,7 +211,6 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
       </div>
 
       <div className="space-y-8 flex-1 pb-10">
-        {/* النمط والخط */}
         <section className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
              <div>
@@ -219,7 +228,6 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
           </div>
         </section>
 
-        {/* إدارة الشعار */}
         <section className="bg-slate-50 p-5 rounded-3xl border border-slate-100 shadow-sm space-y-5">
           <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
             <span className="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
@@ -264,23 +272,12 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
                     <div className="flex justify-between mb-1.5"><span className="text-[10px] font-black text-slate-400">{t.logoSize}</span><span className="text-[10px] font-black text-blue-600">{(activeLogoTab === 'front' ? data.frontLogoScale : data.backLogoScale).toFixed(1)}x</span></div>
                     <input type="range" name={activeLogoTab === 'front' ? "frontLogoScale" : "backLogoScale"} min="0.1" max="4" step="0.1" value={activeLogoTab === 'front' ? data.frontLogoScale : data.backLogoScale} onChange={handleChange} className={sliderClass} />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <span className="text-[9px] font-black text-slate-400 mb-1 block uppercase">{t.horizontal}</span>
-                      <input type="range" name={activeLogoTab === 'front' ? "frontLogoX" : "backLogoX"} min="0" max="100" value={activeLogoTab === 'front' ? data.frontLogoX : data.backLogoX} onChange={handleChange} className={sliderClass} />
-                    </div>
-                    <div>
-                      <span className="text-[9px] font-black text-slate-400 mb-1 block uppercase">{t.vertical}</span>
-                      <input type="range" name={activeLogoTab === 'front' ? "frontLogoY" : "backLogoY"} min="0" max="100" value={activeLogoTab === 'front' ? data.frontLogoY : data.backLogoY} onChange={handleChange} className={sliderClass} />
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
           )}
         </section>
 
-        {/* لوحة الألوان */}
         <section className="bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-4">
           <h3 className="text-[11px] font-black text-pink-500 uppercase tracking-widest">{t.colorPanel}</h3>
           <div className="grid grid-cols-2 gap-4">
@@ -294,16 +291,24 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
           </div>
         </section>
 
-        {/* البيانات الشخصية */}
         <section className="space-y-6">
           <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-4">
             <h3 className="text-[11px] font-black text-indigo-600 uppercase tracking-widest">{t.personalData}</h3>
-            <input name="name" value={data.name} onChange={handleChange} className={inputClass} placeholder={t.fullName} />
-            <input name="title" value={data.title} onChange={handleChange} className={inputClass} placeholder={t.jobTitle} />
+            <div className="space-y-3">
+              <div>
+                <input name="name" value={data.name} onChange={handleChange} className={inputClass} placeholder={t.fullName} />
+                <FontSizeControl name="nameFontSize" label={`${t.fontSize} - ${t.fullName}`} value={data.nameFontSize} />
+              </div>
+              <div>
+                <input name="title" value={data.title} onChange={handleChange} className={inputClass} placeholder={t.jobTitle} />
+                <FontSizeControl name="titleFontSize" label={`${t.fontSize} - ${t.jobTitle}`} value={data.titleFontSize} />
+              </div>
+            </div>
           </div>
 
           <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-5">
             <h3 className="text-[11px] font-black text-orange-600 uppercase tracking-widest">{t.contactData}</h3>
+            <FontSizeControl name="contactFontSize" label={t.fontSize} value={data.contactFontSize} />
             {['phone', 'email', 'website', 'address'].map((field) => (
               <div key={field} className="space-y-1">
                 <input name={field} value={(data as any)[field]} onChange={handleChange} className={inputClass} placeholder={(t as any)[field]} />
@@ -312,7 +317,6 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
             ))}
           </div>
 
-          {/* الحقول الإضافية */}
           <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-[11px] font-black text-purple-600 uppercase tracking-widest">{t.extraFields}</h3>
@@ -329,13 +333,20 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
 
           <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-4">
             <h3 className="text-[11px] font-black text-emerald-600 uppercase tracking-widest">{t.corporateIdentity}</h3>
-            <input name="company" value={data.company} onChange={handleChange} className={inputClass} placeholder={t.companyName} />
-            <input name="tagline" value={data.tagline} onChange={handleChange} className={inputClass} placeholder={t.tagline} />
+            <div className="space-y-4">
+              <div>
+                <input name="company" value={data.company} onChange={handleChange} className={inputClass} placeholder={t.companyName} />
+                <FontSizeControl name="companyFontSize" label={`${t.fontSize} - ${t.companyName}`} value={data.companyFontSize} />
+              </div>
+              <div>
+                <input name="tagline" value={data.tagline} onChange={handleChange} className={inputClass} placeholder={t.tagline} />
+                <FontSizeControl name="taglineFontSize" label={`${t.fontSize} - ${t.tagline}`} value={data.taglineFontSize} />
+              </div>
+            </div>
           </div>
         </section>
       </div>
       
-      {/* أزرار التحميل */}
       <div className="pt-6 border-t border-slate-100 bg-white grid grid-cols-2 gap-4 sticky bottom-0 z-20">
           <button onClick={downloadPDF} disabled={!!exporting} className="p-4 bg-blue-600 text-white rounded-2xl font-black text-sm transition-all hover:bg-blue-700 active:scale-95 shadow-xl shadow-blue-100 disabled:opacity-50">
             {exporting === 'pdf' ? '...' : t.downloadPDF}
