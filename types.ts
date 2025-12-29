@@ -3,10 +3,10 @@ export type CardSide = 'front' | 'back';
 export type TextAlign = 'left' | 'center' | 'right';
 
 export type CardLayout = 
-  | 'minimal' | 'corporate' | 'luxury' | 'modern' | 'tech' 
-  | 'glass' | 'prism' | 'royal' | 'brutalist' | 'origami' 
-  | 'waves' | 'blueprint' | 'stellar' | 'mosaic' | 'neon' 
-  | 'abstract' | 'eco' | 'retro' | 'circuit' | 'duotone' | 'architect';
+  | 'modern' | 'classic' | 'creative' | 'minimal' | 'elegant' | 'tech' 
+  | 'corporate' | 'startup' | 'geometric' | 'mini-plus' | 'gradient' | 'linear' 
+  | 'luxury' | 'swiss' | 'abstract' | 'grid-layout' | 'signature' | 'circular' 
+  | 'lines-layout' | 'glass' | 'neon' | 'x-layout';
 
 export type CardPattern = 
   | 'none' | 'dots' | 'grid' | 'stripes' | 'topography' | 'polygons' 
@@ -37,6 +37,8 @@ export interface CardData {
   secondaryColor: string;
   frontBackgroundColor: string;
   backBackgroundColor: string;
+  frontCustomBgUrl: string | null; // خلفية مخصصة للأمام
+  backCustomBgUrl: string | null;  // خلفية مخصصة للخلف
   textColor: string;
   layout: CardLayout;
   pattern: CardPattern;

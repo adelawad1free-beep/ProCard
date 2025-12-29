@@ -61,6 +61,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
   }, [data.logoUrl, isWhiteMode]);
 
   const currentBg = side === 'front' ? data.frontBackgroundColor : data.backBackgroundColor;
+  const customBgUrl = side === 'front' ? data.frontCustomBgUrl : data.backCustomBgUrl;
   const currentText = data.autoTextColor ? getContrastColor(currentBg) : data.textColor;
   const primary = data.primaryColor || '#0f172a';
   const secondary = data.secondaryColor || '#3b82f6';
@@ -103,163 +104,141 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
     };
   }, [dragging, side, data, setData]);
 
-  const PatternDecoration = useMemo(() => {
-    if (data.pattern === 'none') return null;
-
-    const patternId = `${side}-pattern-${data.pattern}`;
-    const patternColor = currentText;
-
-    switch (data.pattern) {
-      case 'dots':
-        return (
-          <div className="absolute inset-0 pointer-events-none opacity-[0.04]">
-             <svg width="100%" height="100%"><pattern id={patternId} width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.5" fill={patternColor}/></pattern><rect width="100%" height="100%" fill={`url(#${patternId})`}/></svg>
-          </div>
-        );
-      case 'grid':
-        return (
-          <div className="absolute inset-0 pointer-events-none opacity-[0.03]">
-             <svg width="100%" height="100%"><pattern id={patternId} width="30" height="30" patternUnits="userSpaceOnUse"><path d="M 30 0 L 0 0 0 30" fill="none" stroke={patternColor} strokeWidth="0.5"/></pattern><rect width="100%" height="100%" fill={`url(#${patternId})`}/></svg>
-          </div>
-        );
-      case 'stripes':
-        return (
-          <div className="absolute inset-0 pointer-events-none opacity-[0.04]">
-             <svg width="100%" height="100%"><pattern id={patternId} width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="40" stroke={patternColor} strokeWidth="8"/></pattern><rect width="100%" height="100%" fill={`url(#${patternId})`}/></svg>
-          </div>
-        );
-      case 'topography':
-        return (
-          <div className="absolute inset-0 pointer-events-none opacity-[0.05]">
-            <svg width="100%" height="100%" viewBox="0 0 500 300" xmlns="http://www.w3.org/2000/svg">
-              <path d="M0,100 Q125,50 250,100 T500,100 M0,150 Q125,100 250,150 T500,150 M0,200 Q125,150 250,200 T500,200" stroke={patternColor} fill="none" strokeWidth="1" />
-            </svg>
-          </div>
-        );
-      case 'polygons':
-        return (
-          <div className="absolute inset-0 pointer-events-none opacity-[0.03]">
-            <svg width="100%" height="100%" viewBox="0 0 500 300">
-              <polygon points="0,0 150,0 75,100" fill={patternColor} />
-              <polygon points="500,300 350,300 425,200" fill={patternColor} />
-              <polygon points="250,150 300,100 350,150" fill={patternColor} />
-            </svg>
-          </div>
-        );
-      case 'circuit':
-        return (
-          <div className="absolute inset-0 pointer-events-none opacity-[0.04]">
-             <svg width="100%" height="100%"><pattern id={patternId} width="100" height="100" patternUnits="userSpaceOnUse"><path d="M0 50 L50 50 L50 100 M50 0 L50 50 L100 50" fill="none" stroke={patternColor} strokeWidth="1"/><circle cx="50" cy="50" r="3" fill={patternColor}/></pattern><rect width="100%" height="100%" fill={`url(#${patternId})`}/></svg>
-          </div>
-        );
-      case 'bubbles':
-        return (
-          <div className="absolute inset-0 pointer-events-none opacity-[0.03]">
-             <svg width="100%" height="100%"><circle cx="10%" cy="10%" r="50" fill={patternColor}/><circle cx="90%" cy="90%" r="80" fill={patternColor}/><circle cx="50%" cy="50%" r="30" fill={patternColor}/></svg>
-          </div>
-        );
-      case 'waves':
-        return (
-          <div className="absolute inset-0 pointer-events-none opacity-[0.05]">
-            <svg width="100%" height="100%" viewBox="0 0 500 300">
-              <path d="M0,50 C100,20 200,80 300,50 C400,20 500,80 500,50 V300 H0 Z" fill={patternColor} opacity="0.1" />
-              <path d="M0,100 C150,60 350,140 500,100 V300 H0 Z" fill={patternColor} opacity="0.05" />
-            </svg>
-          </div>
-        );
-      case 'blueprint':
-        return (
-          <div className="absolute inset-0 pointer-events-none opacity-[0.04]">
-            <svg width="100%" height="100%">
-              <pattern id={patternId} width="100" height="100" patternUnits="userSpaceOnUse">
-                <rect width="100" height="100" fill="none" stroke={patternColor} strokeWidth="0.5" />
-                <rect width="20" height="20" fill="none" stroke={patternColor} strokeWidth="0.1" />
-              </pattern>
-              <rect width="100%" height="100%" fill={`url(#${patternId})`}/></svg>
-          </div>
-        );
-      case 'stellar':
-        return (
-          <div className="absolute inset-0 pointer-events-none opacity-[0.06]">
-            <svg width="100%" height="100%">
-               <pattern id={patternId} width="80" height="80" patternUnits="userSpaceOnUse">
-                  <circle cx="40" cy="40" r="1" fill={patternColor} />
-                  <path d="M40 35 V45 M35 40 H45" stroke={patternColor} strokeWidth="0.5" />
-               </pattern>
-               <rect width="100%" height="100%" fill={`url(#${patternId})`}/></svg>
-          </div>
-        );
-      case 'mosaic':
-        return (
-          <div className="absolute inset-0 pointer-events-none opacity-[0.03]">
-            <svg width="100%" height="100%">
-               <pattern id={patternId} width="40" height="40" patternUnits="userSpaceOnUse">
-                  <rect x="0" y="0" width="18" height="18" fill={patternColor} opacity="0.5"/>
-                  <rect x="20" y="20" width="18" height="18" fill={patternColor} />
-               </pattern>
-               <rect width="100%" height="100%" fill={`url(#${patternId})`}/></svg>
-          </div>
-        );
-      case 'abstract':
-        return (
-          <div className="absolute inset-0 pointer-events-none opacity-[0.04]">
-            <svg width="100%" height="100%" viewBox="0 0 500 300">
-               <circle cx="50" cy="50" r="40" fill={patternColor} />
-               <rect x="400" y="200" width="80" height="80" transform="rotate(15 440 240)" fill={patternColor} />
-               <polygon points="250,50 300,150 200,150" fill={patternColor} />
-            </svg>
-          </div>
-        );
-      case 'prism':
-        return (
-          <div className="absolute inset-0 pointer-events-none opacity-[0.04]">
-             <svg width="100%" height="100%">
-                <pattern id={patternId} width="60" height="60" patternUnits="userSpaceOnUse" patternTransform="rotate(30)">
-                   <path d="M30 0 L60 60 L0 60 Z" fill="none" stroke={patternColor} strokeWidth="1" />
-                </pattern>
-                <rect width="100%" height="100%" fill={`url(#${patternId})`}/></svg>
-          </div>
-        );
-      case 'bauhaus':
-        return (
-          <div className="absolute inset-0 pointer-events-none opacity-[0.04]">
-            <svg width="100%" height="100%" viewBox="0 0 500 300">
-              <rect x="20" y="20" width="40" height="40" fill={patternColor} />
-              <circle cx="460" cy="260" r="30" fill={patternColor} />
-              <path d="M400,20 L480,100" stroke={patternColor} strokeWidth="10" />
-            </svg>
-          </div>
-        );
-      default:
-        return null;
-    }
-  }, [data.pattern, currentText, side]);
+  // استبدال أنماط الخلفية الجاهزة بالخلفية المرفوعة
+  const CustomBgLayer = useMemo(() => {
+    if (!customBgUrl) return null;
+    return (
+      <div 
+        className="absolute inset-0 z-0 pointer-events-none bg-cover bg-center" 
+        style={{ backgroundImage: `url(${customBgUrl})` }}
+      />
+    );
+  }, [customBgUrl]);
 
   const LayoutDecoration = useMemo(() => {
+    const accent = primary;
     switch (data.layout) {
+      case 'modern':
+        return (
+          <div className="absolute inset-0 pointer-events-none z-[1]">
+            <div className={`absolute top-0 ${isArabic ? 'left-0' : 'right-0'} w-32 h-32 opacity-10 rounded-full blur-3xl`} style={{ backgroundColor: accent }}></div>
+            <div className={`absolute bottom-0 ${isArabic ? 'right-0' : 'left-0'} w-48 h-4 bg-current opacity-5`}></div>
+          </div>
+        );
+      case 'classic':
+        return (
+          <div className="absolute inset-4 border border-current opacity-10 pointer-events-none z-[1]"></div>
+        );
+      case 'creative':
+        return (
+          <div className="absolute inset-0 pointer-events-none overflow-hidden z-[1]">
+            <div className="absolute -top-20 -left-20 w-64 h-64 rotate-12 opacity-5 rounded-3xl" style={{ backgroundColor: accent }}></div>
+            <div className="absolute -bottom-20 -right-20 w-64 h-64 -rotate-12 opacity-5 rounded-3xl" style={{ backgroundColor: secondary }}></div>
+          </div>
+        );
+      case 'elegant':
+        return (
+          <div className="absolute inset-0 pointer-events-none p-10 flex flex-col justify-between items-center z-[1]">
+            <div className="w-1/2 h-px opacity-20" style={{ backgroundColor: accent }}></div>
+            <div className="w-1/2 h-px opacity-20" style={{ backgroundColor: accent }}></div>
+          </div>
+        );
+      case 'neon':
+        return (
+          <div className="absolute inset-0 border-2 border-current shadow-[inset_0_0_30px_rgba(255,255,255,0.2),0_0_15px_rgba(0,0,0,0.1)] opacity-20 pointer-events-none z-[1]"></div>
+        );
+      case 'glass':
+        return (
+          <div className="absolute inset-0 backdrop-blur-md bg-white/10 border border-white/20 pointer-events-none z-[1]"></div>
+        );
       case 'corporate':
         return (
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div className={`absolute top-0 ${isArabic ? 'left-0' : 'right-0'} w-2 h-full`} style={{ backgroundColor: primary }}></div>
-            <div className={`absolute top-10 ${isArabic ? 'left-2' : 'right-2'} w-24 h-px opacity-30`} style={{ backgroundColor: primary }}></div>
+          <div className="absolute inset-0 pointer-events-none z-[1]">
+            <div className={`absolute top-0 ${isArabic ? 'left-0' : 'right-0'} w-2.5 h-full`} style={{ backgroundColor: accent }}></div>
+            <div className={`absolute top-1/2 -translate-y-1/2 ${isArabic ? 'left-2.5' : 'right-2.5'} w-12 h-px opacity-30`} style={{ backgroundColor: accent }}></div>
+          </div>
+        );
+      case 'startup':
+        return (
+          <div className="absolute inset-0 pointer-events-none overflow-hidden z-[1]">
+            <div className={`absolute top-0 ${isArabic ? 'left-0' : 'right-0'} w-[120%] h-24 -rotate-3 opacity-[0.07]`} style={{ backgroundColor: secondary }}></div>
+          </div>
+        );
+      case 'geometric':
+        return (
+          <div className="absolute inset-0 pointer-events-none opacity-[0.03] z-[1]">
+            <svg width="100%" height="100%"><polygon points="0,0 200,0 0,200" fill="currentColor"/><polygon points="500,300 300,300 500,100" fill="currentColor"/></svg>
+          </div>
+        );
+      case 'linear':
+        return (
+          <div className="absolute inset-0 pointer-events-none z-[1]">
+            <div className="absolute top-1/4 w-full h-px opacity-5 bg-current"></div>
+            <div className="absolute bottom-1/4 w-full h-px opacity-5 bg-current"></div>
           </div>
         );
       case 'luxury':
         return (
-          <div className="absolute inset-0 pointer-events-none p-8">
-            <div className="absolute inset-4 border border-current opacity-10"></div>
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-12 opacity-20" style={{ backgroundColor: primary }}></div>
+          <div className="absolute inset-0 pointer-events-none p-6 z-[1]">
+            <div className="absolute inset-0 border border-current opacity-[0.05]"></div>
+            <div className="absolute inset-2 border border-current opacity-[0.08]"></div>
           </div>
         );
-      case 'glass':
+      case 'swiss':
         return (
-          <div className="absolute inset-0 pointer-events-none p-10 flex items-center justify-center">
-            <div className="absolute top-[-5%] left-[-5%] w-[40%] h-[40%] rounded-full opacity-10 blur-3xl" style={{ backgroundColor: primary }}></div>
-            <div className="absolute bottom-[-5%] right-[-5%] w-[40%] h-[40%] rounded-full opacity-10 blur-3xl" style={{ backgroundColor: secondary }}></div>
-            <div className="w-full h-full backdrop-blur-md bg-white/5 border border-white/20 rounded-none shadow-sm"></div>
+          <div className="absolute inset-0 pointer-events-none p-8 opacity-[0.04] z-[1]">
+             <div className="grid grid-cols-4 grid-rows-4 h-full w-full border border-current">
+                {Array(16).fill(0).map((_,i) => <div key={i} className="border border-current"></div>)}
+             </div>
           </div>
         );
-      case 'minimal':
+      case 'abstract':
+        return (
+          <div className="absolute inset-0 pointer-events-none opacity-[0.05] blur-2xl z-[1]">
+            <div className="absolute top-1/4 left-1/4 w-40 h-40 rounded-full bg-current"></div>
+            <div className="absolute bottom-1/4 right-1/4 w-60 h-60 rounded-full bg-blue-500"></div>
+          </div>
+        );
+      case 'grid-layout':
+        return (
+          <div className="absolute inset-0 pointer-events-none opacity-[0.03] z-[1]">
+            <svg width="100%" height="100%"><defs><pattern id="preview-grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="0.5"/></pattern></defs><rect width="100%" height="100%" fill="url(#preview-grid)"/></svg>
+          </div>
+        );
+      case 'signature':
+        return (
+          <div className="absolute bottom-10 left-10 right-10 h-px bg-current opacity-10 pointer-events-none z-[1]"></div>
+        );
+      case 'circular':
+        return (
+          <div className="absolute -bottom-20 -left-20 w-80 h-80 rounded-full opacity-[0.03] border-[20px] border-current pointer-events-none animate-pulse z-[1]"></div>
+        );
+      case 'lines-layout':
+        return (
+          <div className="absolute inset-0 pointer-events-none opacity-[0.03] z-[1]">
+            <svg width="100%" height="100%"><defs><pattern id="preview-lines" width="100%" height="20" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="100%" y2="0" stroke="currentColor" strokeWidth="1"/></pattern></defs><rect width="100%" height="100%" fill="url(#preview-lines)"/></svg>
+          </div>
+        );
+      case 'gradient':
+        return (
+          <div className="absolute inset-0 pointer-events-none opacity-[0.08] bg-gradient-to-br from-current to-transparent z-[1]"></div>
+        );
+      case 'mini-plus':
+        return (
+          <div className={`absolute top-8 ${isArabic ? 'left-8' : 'right-8'} w-12 h-1.5 opacity-20 rounded-full z-[1]`} style={{ backgroundColor: accent }}></div>
+        );
+      case 'tech':
+        return (
+          <div className="absolute inset-0 pointer-events-none opacity-[0.04] z-[1]">
+             <svg width="100%" height="100%"><pattern id="preview-tech" width="50" height="50" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1.5" fill="currentColor"/><path d="M 25 0 L 25 50 M 0 25 L 50 25" fill="none" stroke="currentColor" strokeWidth="0.2"/></pattern><rect width="100%" height="100%" fill="url(#preview-tech)"/></svg>
+          </div>
+        );
+      case 'x-layout':
+        return (
+          <div className="absolute inset-0 pointer-events-none opacity-[0.015] z-[1]">
+            <svg width="100%" height="100%"><line x1="0" y1="0" x2="100%" y2="100%" stroke="currentColor" strokeWidth="4"/><line x1="100%" y1="0" x2="0" y2="100%" stroke="currentColor" strokeWidth="4"/></svg>
+          </div>
+        );
       default:
         return null;
     }
@@ -271,8 +250,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
     fontFamily: data.fontFamily,
     direction: isArabic ? 'rtl' : 'ltr' as any,
     transition: dragging ? 'none' : 'background-color 0.4s ease, color 0.4s ease',
-    letterSpacing: isArabic ? '0' : 'normal',
-    fontFeatureSettings: isArabic ? '"kern" 1, "liga" 1, "clig" 1, "calt" 1' : 'normal'
+    letterSpacing: isArabic ? '0' : 'normal'
   };
 
   const FlatIcon = ({ id, size = 12 }: { id: string, size?: number }) => {
@@ -281,23 +259,6 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
       <svg className="shrink-0" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
         <path d={path} />
       </svg>
-    );
-  };
-
-  const LogoComponent = () => {
-    if (!logoVisible || !processedLogo) return null;
-    return (
-      <img 
-        onMouseDown={handleMouseDown('logo')}
-        src={processedLogo} 
-        alt="Logo" 
-        className={`absolute z-20 cursor-move transition-shadow hover:ring-1 hover:ring-blue-400 hover:ring-offset-2 rounded-none ${dragging === 'logo' ? 'opacity-50 grayscale' : ''}`}
-        style={{ 
-          left: `${logoX}%`, top: `${logoY}%`,
-          transform: `translate(-50%, -50%) scale(${logoScale})`,
-          maxWidth: '400px', maxHeight: '400px', objectFit: 'contain'
-        }} 
-      />
     );
   };
 
@@ -311,62 +272,65 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
     <div 
       ref={cardRef}
       dir={isArabic ? 'rtl' : 'ltr'}
-      className="relative w-[500px] h-[300px] overflow-hidden rounded-none flex flex-col p-14 shadow-2xl bg-white select-none border border-slate-200/50" 
+      className="relative w-[500px] h-[300px] overflow-hidden rounded-none flex flex-col p-14 shadow-2xl select-none border border-slate-200/50" 
       style={commonStyles}
     >
-        {PatternDecoration}
+        {CustomBgLayer}
         {LayoutDecoration}
-        <LogoComponent />
+        
+        {logoVisible && processedLogo && (
+          <img 
+            onMouseDown={handleMouseDown('logo')}
+            src={processedLogo} 
+            alt="Logo" 
+            className={`absolute z-20 cursor-move transition-shadow hover:ring-1 hover:ring-blue-400 rounded-none ${dragging === 'logo' ? 'opacity-50 grayscale scale-95' : 'hover:scale-105'}`}
+            style={{ 
+              left: `${logoX}%`, top: `${logoY}%`,
+              transform: `translate(-50%, -50%) scale(${logoScale})`,
+              maxWidth: '350px', maxHeight: '350px', objectFit: 'contain'
+            }} 
+          />
+        )}
         
         {side === 'front' ? (
           <>
             <div 
               onMouseDown={handleMouseDown('name')}
-              className={`absolute z-10 cursor-move group p-2 border border-transparent hover:border-blue-200 hover:border-dashed rounded-none transition-colors ${dragging === 'name' ? 'opacity-50' : ''} flex flex-col ${getAlignClass(data.frontNameAlign)}`}
+              className={`absolute z-10 cursor-move group p-2 border border-transparent hover:border-blue-200 hover:border-dashed transition-all ${dragging === 'name' ? 'opacity-50 scale-95' : 'hover:bg-slate-500/5'} flex flex-col ${getAlignClass(data.frontNameAlign)}`}
               style={{ left: `${data.frontNameX}%`, top: `${data.frontNameY}%`, transform: 'translate(-50%, -50%)', minWidth: '350px' }}
             >
-              <h1 className={`font-bold mb-0.5 leading-none ${isArabic ? '' : 'tracking-tight'}`} style={{ fontSize: `${data.nameFontSize}px`, color: data.autoTextColor ? currentText : primary, letterSpacing: isArabic ? '0' : 'inherit' }}>{data.name}</h1>
-              <p className="font-medium opacity-50 leading-tight" style={{ fontSize: `${data.titleFontSize}px`, letterSpacing: isArabic ? '0' : 'inherit' }}>{data.title}</p>
+              <h1 className="font-bold mb-0.5 leading-none transition-colors" style={{ fontSize: `${data.nameFontSize}px`, color: data.autoTextColor ? currentText : primary }}>{data.name}</h1>
+              <p className="font-medium opacity-50 leading-tight" style={{ fontSize: `${data.titleFontSize}px` }}>{data.title}</p>
             </div>
 
             <div 
               onMouseDown={handleMouseDown('contact')}
-              className={`absolute z-10 cursor-move group p-3 border border-transparent hover:border-blue-200 hover:border-dashed rounded-none transition-colors ${dragging === 'contact' ? 'opacity-50' : ''} flex flex-col ${getAlignClass(data.frontContactAlign)}`}
-              style={{ 
-                left: `${data.frontContactX}%`, top: `${data.frontContactY}%`, 
-                transform: 'translate(-50%, -50%)',
-                minWidth: '400px'
-              }}
+              className={`absolute z-10 cursor-move group p-3 border border-transparent hover:border-blue-200 hover:border-dashed transition-all ${dragging === 'contact' ? 'opacity-50 scale-95' : 'hover:bg-slate-500/5'} flex flex-col ${getAlignClass(data.frontContactAlign)}`}
+              style={{ left: `${data.frontContactX}%`, top: `${data.frontContactY}%`, transform: 'translate(-50%, -50%)', minWidth: '400px' }}
             >
               <div className="flex flex-col gap-1.5 opacity-80">
                 {['phone', 'email', 'website', 'address'].map(field => {
                    const val = (data as any)[field];
                    if(!val) return null;
                    return (
-                     <div key={field} className={`flex items-center gap-2 font-bold ${data.frontContactAlign === 'right' ? 'flex-row-reverse' : 'flex-row'}`} style={{ fontSize: `${data.contactFontSize}px`, letterSpacing: isArabic ? '0' : '0.025em' }}>
+                     <div key={field} className={`flex items-center gap-2 font-bold ${data.frontContactAlign === 'right' ? 'flex-row-reverse' : 'flex-row'}`} style={{ fontSize: `${data.contactFontSize}px` }}>
                        <FlatIcon id={(data.icons as any)[field]} size={data.contactFontSize + 2} />
-                       <span>{val}</span>
+                       <span className="truncate max-w-[350px]">{val}</span>
                      </div>
                    );
                 })}
-                {data.extraFields.map((f) => (
-                  <div key={f.id} className={`flex items-center gap-2 font-bold ${data.frontContactAlign === 'right' ? 'flex-row-reverse' : 'flex-row'}`} style={{ fontSize: `${data.contactFontSize}px`, letterSpacing: isArabic ? '0' : '0.025em' }}>
-                    <FlatIcon id={f.iconId} size={data.contactFontSize + 2} />
-                    <span>{f.value}</span>
-                  </div>
-                ))}
               </div>
             </div>
           </>
         ) : (
           <div 
             onMouseDown={handleMouseDown('company')}
-            className={`absolute z-10 cursor-move group p-4 border border-transparent hover:border-blue-200 hover:border-dashed rounded-none transition-colors ${dragging === 'company' ? 'opacity-50' : ''} flex flex-col ${getAlignClass(data.backCompanyAlign)}`}
+            className={`absolute z-10 cursor-move group p-4 border border-transparent hover:border-blue-200 hover:border-dashed transition-all ${dragging === 'company' ? 'opacity-50 scale-95' : 'hover:bg-slate-500/5'} flex flex-col ${getAlignClass(data.backCompanyAlign)}`}
             style={{ left: `${data.backCompanyX}%`, top: `${data.backCompanyY}%`, transform: 'translate(-50%, -50%)', minWidth: '300px' }}
           >
-              <h2 className={`font-bold mb-1 ${isArabic ? '' : 'tracking-tight'}`} style={{ fontSize: `${data.companyFontSize}px`, color: data.autoTextColor ? currentText : primary, letterSpacing: isArabic ? '0' : 'inherit' }}>{data.company}</h2>
+              <h2 className="font-bold mb-1 transition-colors" style={{ fontSize: `${data.companyFontSize}px`, color: data.autoTextColor ? currentText : primary }}>{data.company}</h2>
               <div className="h-0.5 w-10 bg-current opacity-20 my-2"></div>
-              <p className={`font-bold uppercase opacity-40 ${isArabic ? '' : 'tracking-widest'}`} style={{ fontSize: `${data.taglineFontSize}px`, letterSpacing: isArabic ? '0' : 'inherit' }}>{data.tagline}</p>
+              <p className="font-bold uppercase opacity-40 leading-relaxed" style={{ fontSize: `${data.taglineFontSize}px` }}>{data.tagline}</p>
           </div>
         )}
     </div>

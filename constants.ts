@@ -18,14 +18,28 @@ export const FLAT_ICONS: Record<string, string> = {
 };
 
 export const TEMPLATES: Template[] = [
-  { id: 'minimal', name: 'بسيط جداً (Clean)', description: 'بدون أي زخارف، يعتمد على المحتوى فقط' },
-  { id: 'corporate', name: 'المدير التنفيذي (Executive)', description: 'تصميم رسمي جداً بلمسات احترافية' },
-  { id: 'luxury', name: 'برستيج بلاتينيوم (Prestige)', description: 'فخامة ملكية هادئة وبسيطة' },
-  { id: 'modern', name: 'عصري كلاسيك (Modern Classic)', description: 'توازن بين الحداثة والرسمية' },
-  { id: 'glass', name: 'الشفافية العالية (Clear Glass)', description: 'نمط عصري جداً وشفاف' },
-  { id: 'tech', name: 'دقة التقنية (Tech Precision)', description: 'نمط شبكي خفيف ومنظم' },
-  { id: 'architect', name: 'هيكلة الأعمال (Architect)', description: 'استخدام الخطوط الهيكلية الرفيعة' },
-  { id: 'stellar', name: 'النخبة (Elite)', description: 'تدرج احترافي خافت جداً' }
+  { id: 'modern', name: 'عصري', description: 'تصميم يواكب أحدث الصيحات' },
+  { id: 'classic', name: 'كلاسيكي', description: 'رسمية وهدوء تام' },
+  { id: 'creative', name: 'إبداعي', description: 'لمسات فنية غير تقليدية' },
+  { id: 'minimal', name: 'بسيط', description: 'الجمال في البساطة' },
+  { id: 'elegant', name: 'أنيق', description: 'فخامة بتفاصيل رقيقة' },
+  { id: 'tech', name: 'تقني', description: 'للمتخصصين في التكنولوجيا' },
+  { id: 'corporate', name: 'شركات', description: 'رسمي جداً للمنشآت' },
+  { id: 'startup', name: 'ناشئة', description: 'حيوية وطاقة عالية' },
+  { id: 'geometric', name: 'هندسي', description: 'توازن رياضي دقيق' },
+  { id: 'mini-plus', name: 'ميني بلس', description: 'تركيز عالي على المحتوى' },
+  { id: 'gradient', name: 'تدرج', description: 'ألوان متداخلة بانسيابية' },
+  { id: 'linear', name: 'خطي', description: 'خطوط هيكلية واضحة' },
+  { id: 'luxury', name: 'فاخر', description: 'لمسات ملكية ذهبية' },
+  { id: 'swiss', name: 'سويسري', description: 'نظام ودقة متناهية' },
+  { id: 'abstract', name: 'تجريدي', description: 'فن خالص يعبر عنك' },
+  { id: 'grid-layout', name: 'شبكي', description: 'توزيع منظم جداً' },
+  { id: 'signature', name: 'علامة بارزة', description: 'اسمك هو البطل' },
+  { id: 'circular', name: 'دائري', description: 'انحناءات ناعمة ومريحة' },
+  { id: 'lines-layout', name: 'خطوط', description: 'بساطة القلم والورقة' },
+  { id: 'glass', name: 'زجاجي', description: 'تأثير الشفافية الحديث' },
+  { id: 'neon', name: 'نيون', description: 'إضاءة قوية وجذابة' },
+  { id: 'x-layout', name: 'اكس', description: 'هيكل متقاطع فريد' }
 ];
 
 export const PATTERNS: Pattern[] = [
@@ -76,8 +90,10 @@ export const INITIAL_CARD_DATA_AR = {
   secondaryColor: '#3b82f6',
   frontBackgroundColor: '#ffffff',
   backBackgroundColor: '#0f172a',
+  frontCustomBgUrl: null,
+  backCustomBgUrl: null,
   textColor: '#1e293b',
-  layout: 'minimal' as const,
+  layout: 'modern' as const,
   pattern: 'none' as const,
   fontFamily: "'Cairo', sans-serif",
   logoText: 'VISION',
@@ -132,8 +148,10 @@ export const INITIAL_CARD_DATA_EN = {
   secondaryColor: '#3b82f6',
   frontBackgroundColor: '#ffffff',
   backBackgroundColor: '#0f172a',
+  frontCustomBgUrl: null,
+  backCustomBgUrl: null,
   textColor: '#1e293b',
-  layout: 'minimal' as const,
+  layout: 'modern' as const,
   pattern: 'none' as const,
   fontFamily: "'Cairo', sans-serif",
   logoText: 'VISION',
@@ -223,7 +241,11 @@ export const TRANSLATIONS = {
     downloadPDF: "تحميل PDF للطباعة",
     downloadPNG: "حفظ صورة PNG",
     downloadSVG: "تصدير SVG",
-    langToggle: "English"
+    langToggle: "English",
+    customBg: "خلفية خاصة",
+    uploadFrontBg: "رفع خلفية للأمام",
+    uploadBackBg: "رفع خلفية للخلف",
+    removeCustomBg: "إزالة الخلفية"
   },
   en: {
     appName: "Pro Card",
@@ -271,6 +293,10 @@ export const TRANSLATIONS = {
     downloadPDF: "Print PDF",
     downloadPNG: "Save PNG",
     downloadSVG: "Export SVG",
-    langToggle: "العربية"
+    langToggle: "العربية",
+    customBg: "Custom BG",
+    uploadFrontBg: "Front BG",
+    uploadBackBg: "Back BG",
+    removeCustomBg: "Remove"
   }
 };

@@ -1,6 +1,6 @@
 
 import React, { useState, useRef } from 'react';
-import { CardData, ExtraField, TextAlign } from '../types';
+import { CardData, ExtraField, TextAlign, CardLayout } from '../types';
 import { TEMPLATES, ARABIC_FONTS, FLAT_ICONS, TRANSLATIONS, PATTERNS } from '../constants';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
@@ -15,6 +15,8 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
   const [exporting, setExporting] = useState<string | null>(null);
   const [activeLogoTab, setActiveLogoTab] = useState<'front' | 'back'>('back');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const frontBgInputRef = useRef<HTMLInputElement>(null);
+  const backBgInputRef = useRef<HTMLInputElement>(null);
 
   const t = TRANSLATIONS[lang];
 
@@ -62,6 +64,17 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setData(prev => ({ ...prev, logoUrl: reader.result as string, logoBgRemoved: false }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCustomBgUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'frontCustomBgUrl' | 'backCustomBgUrl') => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setData(prev => ({ ...prev, [target]: reader.result as string }));
       };
       reader.readAsDataURL(file);
     }
@@ -242,8 +255,15 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
     </div>
   );
 
+  const LayoutIconSmall = () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-40">
+      <rect x="3" y="3" width="18" height="18" rx="1" ry="1"/>
+      <line x1="3" y1="9" x2="21" y2="9"/>
+    </svg>
+  );
+
   return (
-    <div className={`w-full lg:w-[480px] bg-white ${lang === 'ar' ? 'border-l' : 'border-r'} border-slate-200 h-full overflow-y-auto p-6 scrollbar-hide shadow-2xl z-30 flex flex-col no-print`}>
+    <div className={`w-full lg:w-[500px] bg-white ${lang === 'ar' ? 'border-l' : 'border-r'} border-slate-200 h-full overflow-y-auto p-6 scrollbar-hide shadow-2xl z-30 flex flex-col no-print`}>
       <div className="mb-6 sticky top-0 bg-white z-20 pb-4 border-b border-slate-100 flex justify-between items-center">
         <div>
           <h2 className="text-xl font-black text-slate-900 tracking-tight">{t.designHub}</h2>
@@ -252,7 +272,26 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
       </div>
 
       <div className="space-y-8 flex-1 pb-10">
-        <section className="space-y-4">
+        <section className="space-y-6">
+          <div>
+              <label className="block text-[13px] font-black text-slate-500 mb-4">{lang === 'ar' ? 'النمط (Layout)' : 'Layout'}</label>
+              <div className="grid grid-cols-6 gap-2">
+                {TEMPLATES.map(tmpl => (
+                  <button 
+                    key={tmpl.id} 
+                    onClick={() => setData(prev => ({ ...prev, layout: tmpl.id }))}
+                    className={`flex flex-col items-center justify-center p-2 py-3 rounded-lg border transition-all ${data.layout === tmpl.id ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm ring-1 ring-emerald-500/20' : 'bg-white border-slate-100 text-slate-600 hover:border-slate-300'}`}
+                    title={tmpl.description}
+                  >
+                    <div className="mb-1.5">
+                       <LayoutIconSmall />
+                    </div>
+                    <span className="text-[9px] font-black truncate w-full text-center">{tmpl.name}</span>
+                  </button>
+                ))}
+              </div>
+          </div>
+
           <div className="grid grid-cols-1 gap-4">
              <div>
                 <label className={labelClass}>{t.font}</label>
@@ -261,18 +300,42 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
                 </select>
              </div>
           </div>
-          <div>
-              <label className={labelClass}>{t.bgPattern}</label>
-              <div className="grid grid-cols-3 gap-2">
-                {PATTERNS.map(p => (
-                  <button 
-                    key={p.id} 
-                    onClick={() => setData(prev => ({ ...prev, pattern: p.id }))}
-                    className={`px-3 py-2 text-[10px] font-bold rounded-xl border transition-all ${data.pattern === p.id ? 'bg-slate-900 text-white border-slate-900 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'}`}
-                  >
-                    {lang === 'ar' ? p.name : p.nameEn}
-                  </button>
-                ))}
+
+          {/* استبدال أنماط الخلفية بميزة رفع الصور */}
+          <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-4">
+              <h3 className="text-[11px] font-black text-blue-500 uppercase tracking-widest">{t.customBg}</h3>
+              <div className="grid grid-cols-1 gap-4">
+                {/* رفع خلفية الأمام */}
+                <div className="space-y-2">
+                  <label className={labelClass}>{t.uploadFrontBg}</label>
+                  <input type="file" ref={frontBgInputRef} accept="image/*" className="hidden" onChange={(e) => handleCustomBgUpload(e, 'frontCustomBgUrl')} />
+                  <div className="flex gap-2">
+                    <button onClick={() => frontBgInputRef.current?.click()} className="flex-1 py-3 bg-white border border-slate-200 rounded-xl text-[10px] font-black hover:border-blue-500 transition-all">
+                      {data.frontCustomBgUrl ? t.updateLogo : t.uploadLogo}
+                    </button>
+                    {data.frontCustomBgUrl && (
+                      <button onClick={() => setData(prev => ({ ...prev, frontCustomBgUrl: null }))} className="px-3 bg-red-50 text-red-500 rounded-xl border border-red-100 text-[10px] font-black">
+                        {t.removeCustomBg}
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* رفع خلفية الخلف */}
+                <div className="space-y-2">
+                  <label className={labelClass}>{t.uploadBackBg}</label>
+                  <input type="file" ref={backBgInputRef} accept="image/*" className="hidden" onChange={(e) => handleCustomBgUpload(e, 'backCustomBgUrl')} />
+                  <div className="flex gap-2">
+                    <button onClick={() => backBgInputRef.current?.click()} className="flex-1 py-3 bg-white border border-slate-200 rounded-xl text-[10px] font-black hover:border-blue-500 transition-all">
+                      {data.backCustomBgUrl ? t.updateLogo : t.uploadLogo}
+                    </button>
+                    {data.backCustomBgUrl && (
+                      <button onClick={() => setData(prev => ({ ...prev, backCustomBgUrl: null }))} className="px-3 bg-red-50 text-red-500 rounded-xl border border-red-100 text-[10px] font-black">
+                        {t.removeCustomBg}
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
           </div>
         </section>
