@@ -1,6 +1,6 @@
 
 import React, { useState, useRef } from 'react';
-import { CardData, ExtraField } from '../types';
+import { CardData, ExtraField, TextAlign } from '../types';
 import { TEMPLATES, ARABIC_FONTS, FLAT_ICONS, TRANSLATIONS, PATTERNS } from '../constants';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
@@ -22,6 +22,10 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
     const { name, value, type } = e.target as HTMLInputElement;
     const val = type === 'checkbox' ? (e.target as HTMLInputElement).checked : (type === 'range' || type === 'number' ? parseFloat(value) : value);
     setData(prev => ({ ...prev, [name]: val }));
+  };
+
+  const handleAlignChange = (field: string, align: TextAlign) => {
+    setData(prev => ({ ...prev, [field]: align }));
   };
 
   const handleIconChange = (field: string, iconId: string) => {
@@ -94,9 +98,8 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
     const element = document.getElementById(id);
     if (!element) return null;
     
-    // تحسين خيارات الالتقاط لضمان أعلى دقة وسلامة النصوص العربية
     return await html2canvas(element, { 
-      scale: 5, // رفع الدقة للطباعة (600DPI تقريباً)
+      scale: 5, 
       useCORS: true, 
       backgroundColor: null, 
       logging: false,
@@ -123,10 +126,9 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
       const pdf = new jsPDF({
         orientation: 'l',
         unit: 'mm',
-        format: [85, 55] // مقاس الكرت القياسي بالملي
+        format: [85, 55] 
       });
 
-      // إضافة الوجه الأمامي كصورة عالية الدقة لضمان بقاء الحروف العربية متصلة
       pdf.addImage(frontCanvas.toDataURL('image/png', 1.0), 'PNG', 0, 0, 85, 55, undefined, 'FAST');
       
       pdf.addPage([85, 55], 'l');
@@ -135,7 +137,7 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
       pdf.save(`Card_${data.name.replace(/\s+/g, '_')}.pdf`);
     } catch (err) { 
       console.error("PDF Export Error:", err);
-      alert("حدث خطأ أثناء تصدير PDF. يرجى تجربة حفظ الصور بدلاً من ذلك.");
+      alert("حدث خطأ أثناء تصدير PDF.");
     }
     setExporting(null);
   };
@@ -199,7 +201,7 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
 
   const IconSelector = ({ value, onChange }: { value: string, onChange: (id: string) => void }) => (
     <div className="flex flex-wrap gap-1 mt-1.5 bg-white p-1.5 rounded-xl border border-slate-100">
-      {Object.keys(FLAT_ICONS).map(iconId => (
+      {Object.keys(FLAT_ICONS).filter(k => !k.startsWith('align')).map(iconId => (
         <button
           key={iconId}
           type="button"
@@ -208,6 +210,22 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d={FLAT_ICONS[iconId]} />
+          </svg>
+        </button>
+      ))}
+    </div>
+  );
+
+  const AlignmentControl = ({ value, onChange }: { value: TextAlign, onChange: (val: TextAlign) => void }) => (
+    <div className="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm w-fit mt-1.5">
+      {(['left', 'center', 'right'] as TextAlign[]).map((align) => (
+        <button
+          key={align}
+          onClick={() => onChange(align)}
+          className={`px-3 py-1.5 rounded-lg transition-all ${value === align ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d={FLAT_ICONS[`align${align.charAt(0).toUpperCase() + align.slice(1)}`]} />
           </svg>
         </button>
       ))}
@@ -235,13 +253,7 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
 
       <div className="space-y-8 flex-1 pb-10">
         <section className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-             <div>
-                <label className={labelClass}>{t.layout}</label>
-                <select name="layout" value={data.layout} onChange={handleChange} className={inputClass}>
-                  {TEMPLATES.map(tmp => <option key={tmp.id} value={tmp.id}>{tmp.name}</option>)}
-                </select>
-             </div>
+          <div className="grid grid-cols-1 gap-4">
              <div>
                 <label className={labelClass}>{t.font}</label>
                 <select name="fontFamily" value={data.fontFamily} onChange={handleChange} className={inputClass} style={{ fontFamily: data.fontFamily }}>
@@ -334,7 +346,13 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
             <div className="space-y-3">
               <div>
                 <input name="name" value={data.name} onChange={handleChange} className={inputClass} placeholder={t.fullName} />
-                <FontSizeControl name="nameFontSize" label={`${t.fontSize} - ${t.fullName}`} value={data.nameFontSize} />
+                <div className="flex justify-between items-end">
+                  <FontSizeControl name="nameFontSize" label={`${t.fontSize} - ${t.fullName}`} value={data.nameFontSize} />
+                  <div className="px-1 pb-1">
+                    <span className="text-[9px] font-black text-slate-400 uppercase">{t.alignment}</span>
+                    <AlignmentControl value={data.frontNameAlign} onChange={(v) => handleAlignChange('frontNameAlign', v)} />
+                  </div>
+                </div>
               </div>
               <div>
                 <input name="title" value={data.title} onChange={handleChange} className={inputClass} placeholder={t.jobTitle} />
@@ -344,7 +362,13 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
           </div>
 
           <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-5">
-            <h3 className="text-[11px] font-black text-orange-600 uppercase tracking-widest">{t.contactData}</h3>
+            <div className="flex justify-between items-center">
+              <h3 className="text-[11px] font-black text-orange-600 uppercase tracking-widest">{t.contactData}</h3>
+              <div className="text-right">
+                <span className="text-[9px] font-black text-slate-400 uppercase block">{t.alignment}</span>
+                <AlignmentControl value={data.frontContactAlign} onChange={(v) => handleAlignChange('frontContactAlign', v)} />
+              </div>
+            </div>
             <FontSizeControl name="contactFontSize" label={t.fontSize} value={data.contactFontSize} />
             {['phone', 'email', 'website', 'address'].map((field) => (
               <div key={field} className="space-y-1">
@@ -369,7 +393,13 @@ const Sidebar: React.FC<SidebarProps> = ({ data, setData, lang }) => {
           </div>
 
           <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-4">
-            <h3 className="text-[11px] font-black text-emerald-600 uppercase tracking-widest">{t.corporateIdentity}</h3>
+            <div className="flex justify-between items-center">
+              <h3 className="text-[11px] font-black text-emerald-600 uppercase tracking-widest">{t.corporateIdentity}</h3>
+              <div className="text-right">
+                <span className="text-[9px] font-black text-slate-400 uppercase block">{t.alignment}</span>
+                <AlignmentControl value={data.backCompanyAlign} onChange={(v) => handleAlignChange('backCompanyAlign', v)} />
+              </div>
+            </div>
             <div className="space-y-4">
               <div>
                 <input name="company" value={data.company} onChange={handleChange} className={inputClass} placeholder={t.companyName} />

@@ -14,7 +14,6 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState<string | null>(null);
 
-  // تحديد ما إذا كان المحتوى عربياً بناءً على فحص بسيط للاسم أو الشركة
   const isArabic = useMemo(() => {
     const arabicPattern = /[\u0600-\u06FF]/;
     return arabicPattern.test(data.name) || arabicPattern.test(data.company) || arabicPattern.test(data.title);
@@ -105,6 +104,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
   }, [dragging, side, data, setData]);
 
   const PatternDecoration = useMemo(() => {
+    if (data.pattern === 'none') return null;
+
     const patternId = `${side}-pattern-${data.pattern}`;
     const patternColor = currentText;
 
@@ -157,6 +158,68 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
              <svg width="100%" height="100%"><circle cx="10%" cy="10%" r="50" fill={patternColor}/><circle cx="90%" cy="90%" r="80" fill={patternColor}/><circle cx="50%" cy="50%" r="30" fill={patternColor}/></svg>
           </div>
         );
+      case 'waves':
+        return (
+          <div className="absolute inset-0 pointer-events-none opacity-[0.05]">
+            <svg width="100%" height="100%" viewBox="0 0 500 300">
+              <path d="M0,50 C100,20 200,80 300,50 C400,20 500,80 500,50 V300 H0 Z" fill={patternColor} opacity="0.1" />
+              <path d="M0,100 C150,60 350,140 500,100 V300 H0 Z" fill={patternColor} opacity="0.05" />
+            </svg>
+          </div>
+        );
+      case 'blueprint':
+        return (
+          <div className="absolute inset-0 pointer-events-none opacity-[0.04]">
+            <svg width="100%" height="100%">
+              <pattern id={patternId} width="100" height="100" patternUnits="userSpaceOnUse">
+                <rect width="100" height="100" fill="none" stroke={patternColor} strokeWidth="0.5" />
+                <rect width="20" height="20" fill="none" stroke={patternColor} strokeWidth="0.1" />
+              </pattern>
+              <rect width="100%" height="100%" fill={`url(#${patternId})`}/></svg>
+          </div>
+        );
+      case 'stellar':
+        return (
+          <div className="absolute inset-0 pointer-events-none opacity-[0.06]">
+            <svg width="100%" height="100%">
+               <pattern id={patternId} width="80" height="80" patternUnits="userSpaceOnUse">
+                  <circle cx="40" cy="40" r="1" fill={patternColor} />
+                  <path d="M40 35 V45 M35 40 H45" stroke={patternColor} strokeWidth="0.5" />
+               </pattern>
+               <rect width="100%" height="100%" fill={`url(#${patternId})`}/></svg>
+          </div>
+        );
+      case 'mosaic':
+        return (
+          <div className="absolute inset-0 pointer-events-none opacity-[0.03]">
+            <svg width="100%" height="100%">
+               <pattern id={patternId} width="40" height="40" patternUnits="userSpaceOnUse">
+                  <rect x="0" y="0" width="18" height="18" fill={patternColor} opacity="0.5"/>
+                  <rect x="20" y="20" width="18" height="18" fill={patternColor} />
+               </pattern>
+               <rect width="100%" height="100%" fill={`url(#${patternId})`}/></svg>
+          </div>
+        );
+      case 'abstract':
+        return (
+          <div className="absolute inset-0 pointer-events-none opacity-[0.04]">
+            <svg width="100%" height="100%" viewBox="0 0 500 300">
+               <circle cx="50" cy="50" r="40" fill={patternColor} />
+               <rect x="400" y="200" width="80" height="80" transform="rotate(15 440 240)" fill={patternColor} />
+               <polygon points="250,50 300,150 200,150" fill={patternColor} />
+            </svg>
+          </div>
+        );
+      case 'prism':
+        return (
+          <div className="absolute inset-0 pointer-events-none opacity-[0.04]">
+             <svg width="100%" height="100%">
+                <pattern id={patternId} width="60" height="60" patternUnits="userSpaceOnUse" patternTransform="rotate(30)">
+                   <path d="M30 0 L60 60 L0 60 Z" fill="none" stroke={patternColor} strokeWidth="1" />
+                </pattern>
+                <rect width="100%" height="100%" fill={`url(#${patternId})`}/></svg>
+          </div>
+        );
       case 'bauhaus':
         return (
           <div className="absolute inset-0 pointer-events-none opacity-[0.04]">
@@ -167,7 +230,6 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
             </svg>
           </div>
         );
-      case 'none':
       default:
         return null;
     }
@@ -189,13 +251,6 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-12 opacity-20" style={{ backgroundColor: primary }}></div>
           </div>
         );
-      case 'architect':
-        return (
-          <div className="absolute inset-0 pointer-events-none">
-            <div className={`absolute top-10 ${isArabic ? 'right-10' : 'left-10'} w-2 h-2 border-t ${isArabic ? 'border-r' : 'border-l'} border-current opacity-20`}></div>
-            <div className={`absolute bottom-10 ${isArabic ? 'left-10' : 'right-10'} w-2 h-2 border-b ${isArabic ? 'border-l' : 'border-r'} border-current opacity-20`}></div>
-          </div>
-        );
       case 'glass':
         return (
           <div className="absolute inset-0 pointer-events-none p-10 flex items-center justify-center">
@@ -204,6 +259,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
             <div className="w-full h-full backdrop-blur-md bg-white/5 border border-white/20 rounded-none shadow-sm"></div>
           </div>
         );
+      case 'minimal':
       default:
         return null;
     }
@@ -215,7 +271,6 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
     fontFamily: data.fontFamily,
     direction: isArabic ? 'rtl' : 'ltr' as any,
     transition: dragging ? 'none' : 'background-color 0.4s ease, color 0.4s ease',
-    // لضمان اتصال الحروف العربية ومنع تقطعها
     letterSpacing: isArabic ? '0' : 'normal',
     fontFeatureSettings: isArabic ? '"kern" 1, "liga" 1, "clig" 1, "calt" 1' : 'normal'
   };
@@ -246,6 +301,12 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
     );
   };
 
+  const getAlignClass = (align: string) => {
+    if (align === 'center') return 'text-center items-center';
+    if (align === 'right') return 'text-right items-end';
+    return 'text-left items-start';
+  };
+
   return (
     <div 
       ref={cardRef}
@@ -261,8 +322,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
           <>
             <div 
               onMouseDown={handleMouseDown('name')}
-              className={`absolute z-10 ${isArabic ? 'text-right' : 'text-left'} cursor-move group p-2 border border-transparent hover:border-blue-200 hover:border-dashed rounded-none transition-colors ${dragging === 'name' ? 'opacity-50' : ''}`}
-              style={{ left: `${data.frontNameX}%`, top: `${data.frontNameY}%`, transform: 'translate(-50%, -50%)', minWidth: '200px' }}
+              className={`absolute z-10 cursor-move group p-2 border border-transparent hover:border-blue-200 hover:border-dashed rounded-none transition-colors ${dragging === 'name' ? 'opacity-50' : ''} flex flex-col ${getAlignClass(data.frontNameAlign)}`}
+              style={{ left: `${data.frontNameX}%`, top: `${data.frontNameY}%`, transform: 'translate(-50%, -50%)', minWidth: '350px' }}
             >
               <h1 className={`font-bold mb-0.5 leading-none ${isArabic ? '' : 'tracking-tight'}`} style={{ fontSize: `${data.nameFontSize}px`, color: data.autoTextColor ? currentText : primary, letterSpacing: isArabic ? '0' : 'inherit' }}>{data.name}</h1>
               <p className="font-medium opacity-50 leading-tight" style={{ fontSize: `${data.titleFontSize}px`, letterSpacing: isArabic ? '0' : 'inherit' }}>{data.title}</p>
@@ -270,11 +331,11 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
 
             <div 
               onMouseDown={handleMouseDown('contact')}
-              className={`absolute z-10 ${isArabic ? 'text-right' : 'text-left'} cursor-move group p-3 border border-transparent hover:border-blue-200 hover:border-dashed rounded-none transition-colors ${dragging === 'contact' ? 'opacity-50' : ''}`}
+              className={`absolute z-10 cursor-move group p-3 border border-transparent hover:border-blue-200 hover:border-dashed rounded-none transition-colors ${dragging === 'contact' ? 'opacity-50' : ''} flex flex-col ${getAlignClass(data.frontContactAlign)}`}
               style={{ 
                 left: `${data.frontContactX}%`, top: `${data.frontContactY}%`, 
                 transform: 'translate(-50%, -50%)',
-                minWidth: '240px'
+                minWidth: '400px'
               }}
             >
               <div className="flex flex-col gap-1.5 opacity-80">
@@ -282,14 +343,14 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
                    const val = (data as any)[field];
                    if(!val) return null;
                    return (
-                     <div key={field} className={`flex items-center gap-2 font-bold`} style={{ fontSize: `${data.contactFontSize}px`, letterSpacing: isArabic ? '0' : '0.025em' }}>
+                     <div key={field} className={`flex items-center gap-2 font-bold ${data.frontContactAlign === 'right' ? 'flex-row-reverse' : 'flex-row'}`} style={{ fontSize: `${data.contactFontSize}px`, letterSpacing: isArabic ? '0' : '0.025em' }}>
                        <FlatIcon id={(data.icons as any)[field]} size={data.contactFontSize + 2} />
                        <span>{val}</span>
                      </div>
                    );
                 })}
                 {data.extraFields.map((f) => (
-                  <div key={f.id} className={`flex items-center gap-2 font-bold`} style={{ fontSize: `${data.contactFontSize}px`, letterSpacing: isArabic ? '0' : '0.025em' }}>
+                  <div key={f.id} className={`flex items-center gap-2 font-bold ${data.frontContactAlign === 'right' ? 'flex-row-reverse' : 'flex-row'}`} style={{ fontSize: `${data.contactFontSize}px`, letterSpacing: isArabic ? '0' : '0.025em' }}>
                     <FlatIcon id={f.iconId} size={data.contactFontSize + 2} />
                     <span>{f.value}</span>
                   </div>
@@ -300,11 +361,11 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, setData, side }) => {
         ) : (
           <div 
             onMouseDown={handleMouseDown('company')}
-            className={`absolute z-10 text-center cursor-move group p-4 border border-transparent hover:border-blue-200 hover:border-dashed rounded-none transition-colors ${dragging === 'company' ? 'opacity-50' : ''}`}
+            className={`absolute z-10 cursor-move group p-4 border border-transparent hover:border-blue-200 hover:border-dashed rounded-none transition-colors ${dragging === 'company' ? 'opacity-50' : ''} flex flex-col ${getAlignClass(data.backCompanyAlign)}`}
             style={{ left: `${data.backCompanyX}%`, top: `${data.backCompanyY}%`, transform: 'translate(-50%, -50%)', minWidth: '300px' }}
           >
               <h2 className={`font-bold mb-1 ${isArabic ? '' : 'tracking-tight'}`} style={{ fontSize: `${data.companyFontSize}px`, color: data.autoTextColor ? currentText : primary, letterSpacing: isArabic ? '0' : 'inherit' }}>{data.company}</h2>
-              <div className="h-0.5 w-10 bg-current mx-auto mb-3 opacity-20"></div>
+              <div className="h-0.5 w-10 bg-current opacity-20 my-2"></div>
               <p className={`font-bold uppercase opacity-40 ${isArabic ? '' : 'tracking-widest'}`} style={{ fontSize: `${data.taglineFontSize}px`, letterSpacing: isArabic ? '0' : 'inherit' }}>{data.tagline}</p>
           </div>
         )}

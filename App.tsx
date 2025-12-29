@@ -31,7 +31,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className={`flex flex-col lg:flex-row h-screen w-full bg-[#f8fafc] overflow-hidden ${lang === 'ar' ? "font-['Tajawal']" : "font-sans"}`}>
+    <div className={`flex flex-col lg:flex-row h-screen w-full bg-[#f8fafc] overflow-hidden ${lang === 'ar' ? "font-['Cairo']" : "font-sans"}`}>
       <Sidebar data={cardData} setData={setCardData} lang={lang} />
 
       <main className="flex-1 flex flex-col h-full overflow-y-auto relative bg-[#f1f5f9]">

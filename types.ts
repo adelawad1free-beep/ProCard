@@ -1,5 +1,6 @@
 
 export type CardSide = 'front' | 'back';
+export type TextAlign = 'left' | 'center' | 'right';
 
 export type CardLayout = 
   | 'minimal' | 'corporate' | 'luxury' | 'modern' | 'tech' 
@@ -9,7 +10,7 @@ export type CardLayout =
 
 export type CardPattern = 
   | 'none' | 'dots' | 'grid' | 'stripes' | 'topography' | 'polygons' 
-  | 'waves' | 'circuit' | 'lines' | 'bauhaus' | 'bubbles';
+  | 'waves' | 'circuit' | 'lines' | 'bauhaus' | 'bubbles' | 'blueprint' | 'stellar' | 'mosaic' | 'abstract' | 'prism';
 
 export interface CardFont {
   id: string;
@@ -38,7 +39,7 @@ export interface CardData {
   backBackgroundColor: string;
   textColor: string;
   layout: CardLayout;
-  pattern: CardPattern; // New property
+  pattern: CardPattern;
   fontFamily: string;
   logoText: string;
   tagline: string;
@@ -56,13 +57,16 @@ export interface CardData {
   backLogoVisible: boolean;
   backLogoWhite: boolean; 
   logoBgRemoved: boolean;
-  // Text Positions
+  // Text Positions & Alignment
   frontNameX: number;
   frontNameY: number;
+  frontNameAlign: TextAlign;
   frontContactX: number;
   frontContactY: number;
+  frontContactAlign: TextAlign;
   backCompanyX: number;
   backCompanyY: number;
+  backCompanyAlign: TextAlign;
   // Font Sizes
   nameFontSize: number;
   titleFontSize: number;
